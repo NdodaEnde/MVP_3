@@ -1,0 +1,299 @@
+SurgiScan - MVP Specification
+Product Overview
+SurgiScan is a B2B SaaS platform that digitizes the occupational health examination workflow for South African medical facilities and businesses. The platform replaces the traditional paper-based process where patients move through multiple stations (questionnaire → nurse → technician → doctor → certificate generation) with a comprehensive digital workflow that creates Electronic Health Records (EHR) and generates digital Certificates of Fitness (COF).
+User Types & Access Levels
+Primary Users
+Receptionists: Manage patient intake, questionnaires, and certificate generation
+Nurses: Record vital signs and medical measurements
+Technicians: Input specialized test results (vision, hearing, lung function, drug screens, x-rays)
+Doctors: Review, verify, and digitally sign certificates
+Organization Admins: Manage users, settings, and organization-wide operations
+Employers/Clients: View employee health certificates and compliance status
+Subscription Tiers
+Basic: Core digital workflow and simple reporting
+Premium: Advanced analytics, automated reporting, and multi-location support
+Enterprise: Predictive analytics, API access, and white-label solutions
+Core User Workflows
+1. Patient Registration & Intake (Receptionist)
+New Patient Check-in
+Patient search by name, ID number, or employer
+Quick registration form for new patients: name, SA ID number, contact details, employer
+Automatic age calculation from SA ID number validation
+Medical examination type selection (pre-employment, periodic, exit)
+Digital questionnaire assignment based on examination type
+Patient queue management with status tracking
+Digital Medical Questionnaire
+Tablet/computer interface for patient self-completion
+Medical history questions with yes/no and text responses
+Current medications and allergies capture
+Previous injury and illness documentation
+Electronic signature capture for consent
+Automatic save functionality to prevent data loss
+Receptionist can assist with questionnaire completion
+Patient Flow Management
+Real-time patient status dashboard showing current location in workflow
+Queue management for each station (nurse, technician, doctor)
+Estimated wait times and appointment scheduling
+Patient notification system for next station readiness
+Workflow progress tracking with timestamps
+2. Vital Signs & Nursing Assessment (Nurse Station)
+Patient Handoff Interface
+Patient queue showing ready patients from reception
+Quick patient selection with questionnaire preview
+Previous examination history display for reference
+Current medications and allergy alerts prominently displayed
+Vital Signs Recording
+Digital forms for height, weight, blood pressure, pulse, temperature
+BMI automatic calculation and classification
+Visual indicators for abnormal readings with configurable ranges
+Photo capture capability for skin conditions or injuries
+Voice-to-text functionality for quick note entry
+Equipment integration options for automatic data capture
+Nursing Assessment Documentation
+General appearance and mental state assessment
+Mobility and physical function evaluation
+Pain assessment scales with visual indicators
+Medication review and reconciliation
+Nursing recommendations and observations
+Digital signature and timestamp for completed assessment
+3. Specialized Testing (Technician Station)
+Test Station Management
+Patient queue from nursing station
+Test type selection based on examination requirements
+Equipment calibration tracking and reminders
+Quality control documentation
+Vision Testing Interface
+Visual acuity testing with digital Snellen charts
+Color vision testing with Ishihara plates
+Visual field testing documentation
+Prescription glasses/contacts recording
+Pass/fail indicators with specific measurements
+Restriction recommendations (e.g., "Must wear corrective lenses")
+Hearing Assessment
+Audiometry test result entry with frequency-specific thresholds
+Hearing protection assessment
+Noise exposure history documentation
+Pass/fail determination with decibel level recording
+Hearing aid usage documentation
+Workplace noise restriction recommendations
+Lung Function Testing
+Spirometry test results with FEV1, FVC measurements
+Peak flow readings and interpretation
+Respiratory symptom assessment
+Smoking history documentation
+Occupational exposure assessment
+Respiratory fitness classification
+Drug Screening Documentation
+Test type selection (urine, saliva, hair)
+Chain of custody digital documentation
+Result entry with substance-specific findings
+Confirmation test tracking
+Medical review officer notes
+Privacy and confidentiality controls
+X-Ray and Imaging Results
+Digital image upload and viewing capability
+Radiologist report attachment
+Abnormality flagging and classification
+Comparison with previous images
+PACS integration for image management
+Print and digital sharing options
+4. Medical Review & Certificate Generation (Doctor Station)
+Patient Review Dashboard
+Complete patient file with all station results
+Red flag alerts for abnormal findings
+Previous examination comparison view
+Employer-specific requirements checklist
+Medical decision support tools
+Comprehensive Medical Review
+All questionnaire responses in organized sections
+Vital signs with trend analysis from previous visits
+Test results with normal/abnormal indicators
+Technician notes and recommendations review
+Medical history correlation with current findings
+Fitness Determination Interface
+Fitness status selection: Fit, Fit with Restrictions, Unfit
+Restriction specification with dropdown options and custom text
+Recommendation text area for workplace accommodations
+Follow-up examination scheduling
+Medical opinion documentation with reasoning
+Digital Certificate Creation
+Auto-populated Certificate of Fitness template
+Organization branding and letterhead integration
+Doctor information and credentials display
+Digital signature pad or uploaded signature image
+Official stamp/seal digital application
+Certificate preview before finalization
+Certificate Approval Workflow
+Final review checklist before signing
+Amendment capability for corrections
+Version control for certificate revisions
+Audit trail of all changes and approvals
+Batch certificate processing for multiple patients
+5. Certificate Distribution & Communication
+Automated Distribution System
+Email delivery to patient and employer simultaneously
+SMS notification with certificate availability
+Secure patient portal access for certificate download
+Employer dashboard integration for immediate access
+Delivery confirmation tracking
+Certificate Management
+Digital certificate storage with search capability
+Reprint and resend functionality
+Certificate validity tracking and expiration alerts
+Duplicate certificate generation with watermarks
+Certificate authentication QR codes
+6. Electronic Health Records (EHR) Management
+Comprehensive Patient Files
+Complete examination history with all data points
+Searchable medical records across all examinations
+Trend analysis for health metrics over time
+Medical image and document attachment system
+Cross-referencing between related examinations
+Data Integration & Continuity
+Automatic data population from previous examinations
+Change tracking and medical history timeline
+Family medical history integration
+Medication history and interaction checking
+Allergy and adverse reaction tracking
+7. Reporting & Analytics
+Basic Tier Reporting
+Daily examination summary reports
+Monthly certificate generation statistics
+Basic compliance tracking for employers
+Simple export to PDF and Excel formats
+Standard occupational health metrics
+Premium Tier Analytics
+Monthly and quarterly automated report generation
+Employer-specific compliance dashboards
+Health trend analysis across employee populations
+Risk assessment reporting with recommendations
+Custom report builder with drag-and-drop interface
+Scheduled report delivery via email
+Enterprise Tier Intelligence
+Predictive health analytics for workforce planning
+Benchmarking against industry health standards
+Advanced data visualization with interactive charts
+Natural language queries for complex data analysis
+API access for custom reporting solutions
+White-label reporting for client distribution
+8. Quality Control & Compliance
+Workflow Validation
+Mandatory field completion at each station
+Data consistency checking across stations
+Abnormal result flagging and follow-up requirements
+Incomplete examination tracking and alerts
+Quality assurance checklists for each role
+Audit Trail & Documentation
+Complete user activity logging with timestamps
+Data modification tracking with user identification
+Certificate generation and distribution logging
+Equipment calibration and maintenance tracking
+Compliance reporting for regulatory requirements
+9. Multi-Location & Organization Management
+Organization Setup
+Multiple clinic/location support under single organization
+Location-specific branding and certificate templates
+User role assignment by location
+Equipment and resource management by location
+Cross-location patient transfer capabilities
+User Management & Permissions
+Role-based access control for each user type
+Location-specific user assignments
+Shift management and user scheduling
+Activity monitoring and performance tracking
+Training documentation and certification tracking
+Key User Interface Elements
+Station-Specific Dashboards
+Reception Dashboard: Patient queue, check-in status, appointment scheduling
+Nurse Dashboard: Vital signs entry, patient handoff, equipment status
+Technician Dashboard: Test queues, equipment calibration, result entry
+Doctor Dashboard: Review queue, certificate generation, medical decisions
+Real-Time Workflow Tracking
+Patient location indicators throughout facility
+Station capacity and wait time displays
+Workflow bottleneck identification
+Staff productivity metrics
+Equipment utilization tracking
+Mobile-Responsive Design
+Tablet-optimized interfaces for each station
+Touch-friendly data entry forms
+Barcode scanning for patient identification
+Offline capability for basic data entry
+Automatic sync when connection restored
+Notification & Communication System
+Real-Time Workflow Notifications
+Patient ready alerts between stations
+Abnormal result flagging to doctors
+Equipment maintenance reminders
+Quality control alerts for incomplete data
+Shift change and handoff notifications
+External Communications
+Patient appointment reminders via SMS/email
+Certificate completion notifications to employers
+Expiration alerts for periodic examinations
+Regulatory compliance deadline reminders
+System maintenance and update notifications
+Required Third-Party Technologies
+Document Processing & OCR Service
+Purpose: Process existing paper documents and extract data for digitization
+Requirements:
+Medical form recognition and data extraction
+Handwriting recognition for paper questionnaires
+Image enhancement for poor quality scans
+South African ID number validation
+Batch processing for historical records
+Recommended Options: Google Document AI, AWS Textract, Azure Form Recognizer
+Digital Signature Platform
+Purpose: Enable legally binding digital signatures for certificates
+Requirements:
+South African electronic signature compliance
+Biometric signature capture
+Certificate authentication and verification
+Audit trail for signature events
+Integration with existing workflows
+Recommended Options: DocuSign, Adobe Sign, or local SA providers
+Email & SMS Communication Service
+Purpose: Send notifications, certificates, and reports
+Requirements:
+High deliverability rates in South Africa
+SMS gateway for local mobile networks
+Template management for various communications
+Delivery tracking and confirmation
+Bulk messaging capabilities
+Recommended Options: SendGrid + Twilio, or local providers like BulkSMS
+Secure File Storage & Management
+Purpose: Store medical records, certificates, and images securely
+Requirements:
+POPIA (Protection of Personal Information Act) compliance
+Medical-grade security and encryption
+Backup and disaster recovery
+Access logging and audit trails
+Integration with medical imaging systems
+Payment Processing (South African)
+Purpose: Handle subscription billing and payments
+Requirements:
+South African payment methods (EFT, credit cards)
+Recurring billing for subscriptions
+Invoice generation and management
+Multi-currency support for international clients
+Integration with local accounting systems
+Recommended Options: PayFast, Peach Payments, or Stripe
+Medical Equipment Integration APIs
+Purpose: Connect with medical devices for automatic data capture
+Requirements:
+Blood pressure monitor integration
+Spirometry equipment connectivity
+Audiometry device data capture
+Scale and height measurement automation
+Equipment calibration tracking
+Recommended Options: HL7 FHIR standards, device-specific APIs
+Analytics & Business Intelligence
+Purpose: Generate insights from health data and workflow metrics
+Requirements:
+Medical data visualization
+Compliance reporting capabilities
+Performance analytics for clinics
+Predictive modeling for health trends
+Custom dashboard creation
+Recommended Options: Tableau, Power BI, or Google Analytics
+This specification focuses on digitizing the complete occupational health examination workflow while maintaining the familiar process flow that medical staff are accustomed to, ensuring smooth adoption and improved efficiency in generating digital health records and certificates.

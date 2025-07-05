@@ -1,0 +1,525 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* ===== TABLET OPTIMIZATION STYLES ===== */
+
+  /* ===== TABLET LAYOUT FOUNDATION ===== */
+  .tablet-layout {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .tablet-content * {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* ===== TOUCH TARGET OPTIMIZATION ===== */
+  .tablet-touch-target {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    transition: all 0.15s ease-in-out !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tablet-touch-target:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease-in-out;
+  }
+
+  .tablet-touch-target:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  /* ===== FORM CONTROLS OPTIMIZATION ===== */
+  .tablet-layout input,
+  .tablet-layout textarea,
+  .tablet-layout select,
+  .tablet-layout button {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 2px solid hsl(var(--border));
+    transition: all 0.2s ease-in-out;
+  }
+
+  .tablet-layout input:focus,
+  .tablet-layout textarea:focus,
+  .tablet-layout select:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+    outline: none;
+    transform: none;
+  }
+
+  .tablet-layout input[type="checkbox"],
+  .tablet-layout input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .tablet-layout label {
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 8px 0;
+  }
+
+  /* ===== SECTION NAVIGATION OPTIMIZATION ===== */
+  .tablet-section-btn {
+    min-height: 80px !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .tablet-section-btn:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease-in-out;
+  }
+
+  .tablet-section-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  /* ===== SIGNATURE PAD TABLET OPTIMIZATION ===== */
+  .tablet-signature-pad {
+    width: 100% !important;
+    height: 250px !important;
+    border: 3px solid hsl(var(--border)) !important;
+    border-radius: 12px !important;
+    touch-action: none !important;
+    cursor: crosshair;
+    background: hsl(var(--background));
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .tablet-signature-pad:focus {
+    border-color: hsl(var(--ring)) !important;
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    outline: none;
+  }
+
+  .tablet-signature-container {
+    padding: 24px;
+    background: hsl(var(--muted) / 0.5);
+    border-radius: 16px;
+    border: 2px dashed hsl(var(--border));
+  }
+
+  .tablet-signature-container .signature-controls {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .tablet-signature-container .signature-controls button {
+    min-height: 48px !important;
+    min-width: 120px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+  }
+
+  /* ===== FORM FIELD OPTIMIZATIONS ===== */
+  .tablet-form-field {
+    margin-bottom: 24px;
+  }
+
+  .tablet-form-field label {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin-bottom: 8px;
+  }
+
+  .tablet-form-field input,
+  .tablet-form-field textarea,
+  .tablet-form-field select {
+    width: 100%;
+    font-size: 16px;
+    line-height: 1.5;
+    border-radius: 8px;
+    border: 2px solid hsl(var(--border));
+    background-color: hsl(var(--background));
+    transition: all 0.2s ease-in-out;
+  }
+
+  .tablet-form-field .form-description {
+    font-size: 14px;
+    color: hsl(var(--muted-foreground));
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  .tablet-form-field .form-error {
+    font-size: 14px;
+    color: hsl(var(--destructive));
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* ===== CARD AND LAYOUT OPTIMIZATIONS ===== */
+  .tablet-card {
+    border-radius: 16px !important;
+    border: 1px solid hsl(var(--border)) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    margin-bottom: 24px !important;
+    overflow: hidden;
+    background: hsl(var(--card));
+  }
+
+  .tablet-card-header {
+    padding: 24px 24px 16px 24px !important;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .tablet-card-content {
+    padding: 24px !important;
+  }
+
+  .tablet-card-title {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: hsl(var(--card-foreground));
+    margin-bottom: 4px;
+  }
+
+  .tablet-card-description {
+    font-size: 16px !important;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
+  }
+
+  /* ===== MEDICAL FORM SPECIFIC STYLES ===== */
+  .tablet-medical-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+    border: 2px solid hsl(var(--border));
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    min-height: 60px;
+    background: hsl(var(--card));
+  }
+
+  .tablet-medical-checkbox:hover {
+    border-color: hsl(var(--ring));
+    background-color: hsl(var(--accent));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .tablet-medical-checkbox.checked {
+    border-color: hsl(var(--ring));
+    background-color: hsl(var(--accent));
+  }
+
+  .tablet-medical-checkbox.critical {
+    border-color: hsl(var(--destructive));
+    background-color: hsl(var(--destructive) / 0.1);
+  }
+
+  .tablet-medical-checkbox .checkbox-input {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .tablet-medical-checkbox .checkbox-label {
+    flex: 1;
+    font-size: 16px;
+    line-height: 1.5;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .tablet-medical-checkbox .checkbox-description {
+    font-size: 14px;
+    color: hsl(var(--muted-foreground));
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* ===== SIGNATURE PAD ENHANCED STYLES ===== */
+  .tablet-signature-enhanced {
+    position: relative;
+    background: hsl(var(--card));
+    border: 3px solid hsl(var(--border));
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .tablet-signature-enhanced.active {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .tablet-signature-canvas {
+    width: 100% !important;
+    height: 200px !important;
+    border: 2px dashed hsl(var(--border));
+    border-radius: 8px;
+    background: hsl(var(--muted) / 0.3);
+    touch-action: none;
+    cursor: crosshair;
+    display: block;
+  }
+
+  .tablet-signature-canvas:focus {
+    border-color: hsl(var(--ring));
+    outline: none;
+    background: hsl(var(--background));
+  }
+
+  /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+  .tablet-layout *:focus {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .tablet-layout button:focus,
+  .tablet-layout input:focus,
+  .tablet-layout textarea:focus,
+  .tablet-layout select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+  }
+
+  /* ===== PERFORMANCE OPTIMIZATIONS ===== */
+  .tablet-layout * {
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  .tablet-layout .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* ===== RESPONSIVE BREAKPOINTS FOR TABLETS ===== */
+  .tablet-portrait {
+    --tablet-sidebar-width: 100%;
+    --tablet-content-padding: 16px;
+    --tablet-header-height: 80px;
+    --tablet-footer-height: 80px;
+  }
+
+  .tablet-portrait .tablet-sidebar {
+    width: 100%;
+    position: fixed;
+    z-index: 50;
+  }
+
+  .tablet-portrait .tablet-content {
+    padding: var(--tablet-content-padding);
+    margin-left: 0;
+  }
+
+  .tablet-portrait .tablet-touch-target {
+    min-height: 52px !important;
+    padding: 14px 18px !important;
+  }
+
+  .tablet-landscape {
+    --tablet-sidebar-width: 320px;
+    --tablet-content-padding: 24px;
+    --tablet-header-height: 80px;
+    --tablet-footer-height: 80px;
+  }
+
+  .tablet-landscape .tablet-sidebar {
+    width: var(--tablet-sidebar-width);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .tablet-landscape .tablet-content {
+    padding: var(--tablet-content-padding);
+    margin-left: 0;
+  }
+}
+
+@layer utilities {
+  /* ===== RESPONSIVE UTILITIES ===== */
+  @media (max-width: 767px) {
+    .tablet-hide-mobile {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .tablet-hide-tablet {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .tablet-hide-desktop {
+      display: none !important;
+    }
+  }
+
+  /* ===== SPECIFIC DEVICE OPTIMIZATIONS ===== */
+  @media screen and (min-width: 1024px) {
+    .tablet-layout {
+      --touch-target-size: 48px;
+      --font-size-base: 16px;
+      --spacing-unit: 8px;
+    }
+    
+    .tablet-touch-target {
+      min-height: var(--touch-target-size) !important;
+      min-width: var(--touch-target-size) !important;
+    }
+  }
+
+  @media screen and (min-width: 1366px) {
+    .tablet-layout {
+      --touch-target-size: 52px;
+      --font-size-base: 18px;
+      --spacing-unit: 12px;
+    }
+    
+    .tablet-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .tablet-touch-target {
+      min-height: var(--touch-target-size) !important;
+      font-size: var(--font-size-base) !important;
+    }
+  }
+
+  /* ===== ACCESSIBILITY SUPPORT ===== */
+  @media (prefers-contrast: high) {
+    .tablet-layout {
+      --border-color: #000000;
+      --text-color: #000000;
+      --background-color: #ffffff;
+    }
+    
+    .tablet-layout input,
+    .tablet-layout textarea,
+    .tablet-layout select {
+      border: 3px solid var(--border-color) !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tablet-layout * {
+      transition: none !important;
+      animation: none !important;
+    }
+    
+    .tablet-touch-target:active {
+      transform: none !important;
+    }
+    
+    .tablet-touch-target:hover {
+      transform: none !important;
+    }
+  }
+}
