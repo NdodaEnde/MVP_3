@@ -1,0 +1,113 @@
+// public/offline.html - Offline fallback page
+const offlinePageHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SurgiScan - Offline</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0 0 16px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        p {
+            margin: 0 0 24px 0;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        .online { background: rgba(34, 197, 94, 0.2); }
+        .offline { background: rgba(239, 68, 68, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📶</div>
+        <h1>You're Offline</h1>
+        <p>It looks like you've lost your internet connection. Don't worry - any questionnaire data you've entered has been saved locally and will sync when you're back online.</p>
+        
+        <button class="retry-btn" onclick="location.reload()">
+            Try Again
+        </button>
+        
+        <div class="status" id="status">
+            <span id="connection-status">Checking connection...</span>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus() {
+            const statusEl = document.getElementById('connection-status');
+            const statusContainer = document.getElementById('status');
+            
+            if (navigator.onLine) {
+                statusEl.textContent = 'Connection restored! Click "Try Again" to continue.';
+                statusContainer.className = 'status online';
+            } else {
+                statusEl.textContent = 'Still offline. Your data is safe and will sync when reconnected.';
+                statusContainer.className = 'status offline';
+            }
+        }
+
+        // Check connection status
+        updateStatus();
+        
+        // Listen for connection changes
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+        
+        // Auto-reload when connection is restored
+        window.addEventListener('online', () => {
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
+`;
