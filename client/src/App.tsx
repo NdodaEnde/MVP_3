@@ -22,7 +22,7 @@ import { PatientEHR } from "./pages/PatientEHR"
 import { SearchableEHR } from "./pages/SearchableEHR"
 import { Reports } from "./pages/Reports"
 import { Settings } from "./pages/Settings"
-import { MobileQuestionnaire } from "./components/MobileQuestionnaire"
+import MobileQuestionnaire from "./components/MobileQuestionnaire"
 
 // Diagnostic component to see what's happening
 function DiagnosticWrapper({ children }: { children: React.ReactNode }) {
