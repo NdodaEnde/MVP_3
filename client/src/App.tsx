@@ -22,8 +22,8 @@ import { PatientEHR } from "./pages/PatientEHR"
 import { SearchableEHR } from "./pages/SearchableEHR"
 import { Reports } from "./pages/Reports"
 import { Settings } from "./pages/Settings"
-//import MobileQuestionnaire from "./components/MobileQuestionnaire"
-import CompletePaperQuestionnaire from "./components/CompletePaperQuestionnaire"
+import MobileQuestionnaire from "./components/MobileQuestionnaire"
+//import CompletePaperQuestionnaire from "./components/CompletePaperQuestionnaire"
 
 
 // Diagnostic component to see what's happening
@@ -73,7 +73,7 @@ function App() {
             <Route path="documents" element={<Documents />} />
             <Route path="processing" element={<HistoricalProcessing />} />
             <Route path="questionnaires" element={<Questionnaires />} />
-            <Route path="questionnaires/mobile" element={<CompletePaperQuestionnaire />} />
+            <Route path="questionnaires/mobile" element={<MobileQuestionnaire />} />
             <Route path="tests" element={<MedicalTests />} />
             <Route path="review" element={<MedicalReview />} />
             <Route path="patient-ehr/:patientId" element={<PatientEHR />} />
