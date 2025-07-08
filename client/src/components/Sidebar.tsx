@@ -53,6 +53,12 @@ const navigationItems = [
     description: 'Search all patient records'
   },
   {
+    title: 'Natural Language Query',
+    href: '/nl-query',
+    icon: Brain,
+    roles: ['doctor', 'admin', 'employer', 'nurse', 'technician']
+  },
+  {
     title: 'Documents',
     href: '/documents',
     icon: FolderOpen,
