@@ -4,6 +4,7 @@ const Questionnaire = require('../models/Questionnaire');
 const Patient = require('../models/Patient');
 const Examination = require('../models/Examination');
 const User = require('../models/User');
+const NotificationService = require('../services/NotificationService');
 const { requireUser } = require('./middleware/auth');
 const { 
   validateSAIDMiddleware, 
@@ -11,6 +12,9 @@ const {
   validationErrorHandler,
   saIdValidationRateLimit 
 } = require('../middleware/validation');
+
+// Initialize notification service
+const notificationService = new NotificationService();
 
 // Validate SA ID endpoint
 router.post('/validate-sa-id', saIdValidationRateLimit, validateSingleSAIDMiddleware, async (req, res) => {
