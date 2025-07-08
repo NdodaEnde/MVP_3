@@ -150,6 +150,53 @@ const questionnaireSchema = new mongoose.Schema({
     }
   },
 
+  // Physical Examination
+  physical_examination: {
+    vitals: {
+      height: { type: Number, min: 100, max: 250 }, // cm
+      weight: { type: Number, min: 30, max: 300 }, // kg
+      bmi: { type: Number, min: 10, max: 60 },
+      pulse_rate: { type: Number, min: 40, max: 200 }, // bpm
+      blood_pressure: {
+        systolic: { type: Number, min: 70, max: 250 },
+        diastolic: { type: Number, min: 40, max: 150 }
+      },
+      temperature: { type: Number, min: 35, max: 42 }, // celsius
+      respiratory_rate: { type: Number, min: 8, max: 40 } // per minute
+    },
+    urinalysis: {
+      blood: { type: String, enum: ['positive', 'negative', 'trace'] },
+      protein: { type: String, enum: ['positive', 'negative', 'trace'] },
+      glucose: { type: String, enum: ['positive', 'negative', 'trace'] },
+      ketones: { type: String, enum: ['positive', 'negative', 'trace'] },
+      specific_gravity: { type: Number, min: 1.000, max: 1.040 },
+      ph: { type: Number, min: 4.0, max: 9.0 }
+    },
+    vision_test: {
+      visual_acuity_right: String,
+      visual_acuity_left: String,
+      color_vision: { type: String, enum: ['normal', 'deficient', 'not_tested'] },
+      glasses_required: Boolean,
+      eye_conditions: String
+    },
+    hearing_test: {
+      audiometry_performed: Boolean,
+      hearing_loss_detected: Boolean,
+      ear_conditions: String,
+      noise_exposure_history: Boolean
+    },
+    general_examination: {
+      appearance: String,
+      cardiovascular: String,
+      respiratory: String,
+      abdominal: String,
+      musculoskeletal: String,
+      neurological: String,
+      skin: String,
+      other_findings: String
+    }
+  },
+
   // Medical History
   medical_history: {
     current_conditions: {
