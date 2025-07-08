@@ -54,6 +54,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 // Questionnaire Routes
 app.use('/api/questionnaires', questionnaireRoutes);
+// Natural Language Query Routes
+app.use('/api/nl-query', require('./routes/nlQueryRoutes'));
 
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {
