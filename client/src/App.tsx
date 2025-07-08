@@ -24,6 +24,7 @@ import { Reports } from "./pages/Reports"
 import { Settings } from "./pages/Settings"
 import MobileQuestionnaire from "./components/MobileQuestionnaire"
 import StationWorkflowIntegration from "./components/StationWorkflowIntegration"
+import NaturalLanguageQueryInterface from "./components/NaturalLanguageQueryInterface"
 
 
 // Diagnostic component to see what's happening
