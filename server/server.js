@@ -1,7 +1,9 @@
 // Load environment variables
 require("dotenv").config();
-const mongoose = require("mongoose");
+
 const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
 const basicRoutes = require("./routes/index");
@@ -9,8 +11,6 @@ const authRoutes = require("./routes/authRoutes");
 const patientRoutes = require("./routes/patientRoutes");
 const questionnaireRoutes = require("./routes/questionnaireRoutes");
 const { connectDB } = require("./config/database");
-const cors = require("cors");
-const { PerformanceOptimizer, MemoryMonitor } = require('./utils/performance');
 
 if (!process.env.DATABASE_URL) {
   console.error("Error: DATABASE_URL variables in .env missing.");
@@ -18,26 +18,23 @@ if (!process.env.DATABASE_URL) {
 }
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
-// Initialize performance optimizer and memory monitor
-const performanceOptimizer = new PerformanceOptimizer();
-const memoryMonitor = new MemoryMonitor(80); // Alert at 80% memory usage
-
-// Configure performance middleware
-performanceOptimizer.configureMiddleware(app);
+console.log('Starting enhanced SurgiScan server...');
 
 // Pretty-print JSON responses
 app.enable('json spaces');
 // We want to be consistent with URL paths, so we enable strict routing
 app.enable('strict routing');
 
-// CORS and request parsing middleware
+// CORS configuration with enhanced security
 app.use(cors({
   origin: process.env.APP_URL || "http://localhost:5173",
   credentials: true,
   optionsSuccessStatus: 200
 }));
+
+// Request parsing middleware with limits
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
