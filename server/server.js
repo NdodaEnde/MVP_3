@@ -82,9 +82,9 @@ app.use((err, req, res, next) => {
   res.status(500).send("There was an error serving your request.");
 });
 
-app.listen(port, () => {
+app.listen(PORT, () => {
   console.log('Enhanced middleware configured');
   console.log('Notification service ready');
   console.log('Performance monitoring enabled');
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
