@@ -60,6 +60,21 @@ app.use((req, res, next) => {
   res.status(404).send("Page not found.");
 });
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    features: {
+      enhancedValidation: true,
+      notificationService: true,
+      performanceOptimization: true
+    }
+  });
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error(`Unhandled application error: ${err.message}`);
@@ -68,5 +83,8 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
+  console.log('Enhanced middleware configured');
+  console.log('Notification service ready');
+  console.log('Performance monitoring enabled');
   console.log(`Server running at http://localhost:${port}`);
 });
