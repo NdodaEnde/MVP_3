@@ -421,22 +421,70 @@ function IntegratedQuestionnaireView({ patient, workflowData, setWorkflowData, s
   const autoSaveToWorkflow = async () => {
     setAutoSaveStatus('saving');
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Add workflow update notification
-      setNotifications(prev => [{
-        id: `auto_save_${Date.now()}`,
-        type: 'auto_save',
-        message: 'Questionnaire auto-saved to workflow system',
-        timestamp: new Date(),
-        read: false
-      }, ...prev.slice(0, 4)]);
-      
-      setAutoSaveStatus('saved');
+      if (!patient?.questionnaireId) {
+        console.warn('No questionnaire ID available for auto-save');
+        setAutoSaveStatus('saved');
+        return;
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/questionnaires/${patient.questionnaireId}/update-form`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify({
+          formData: {
+            patient_demographics: formData,
+            medical_history: formData.medical_history,
+            physical_exam: formData.physical_exam,
+            working_at_heights_assessment: formData.working_at_heights,
+            declarations_and_signatures: {
+              employee_declaration: formData.employee_declaration
+            }
+          },
+          currentSection: getCurrentSectionName()
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update completion percentage from backend
+        setCompletionPercentage(data.completionPercentage);
+        
+        // Update workflow progress with backend data
+        setWorkflowData(prev => ({
+          ...prev,
+          progress: data.completionPercentage,
+          currentStationProgress: data.completionPercentage,
+          lastSaved: data.lastSaved
+        }));
+        
+        // Add success notification
+        setNotifications(prev => [{
+          id: `auto_save_${Date.now()}`,
+          type: 'auto_save',
+          message: `Questionnaire auto-saved - ${data.completionPercentage}% complete`,
+          timestamp: new Date(),
+          read: false
+        }, ...prev.slice(0, 4)]);
+        
+        setAutoSaveStatus('saved');
+      } else {
+        throw new Error('Failed to auto-save to backend');
+      }
     } catch (error) {
+      console.error('Auto-save error:', error);
+      // Fallback to local storage
+      saveToLocalStorage();
       setAutoSaveStatus('error');
     }
+  };
+
+  const getCurrentSectionName = () => {
+    const sectionNames = ['personal_info', 'medical_history', 'physical_exam', 'working_at_heights', 'declarations_and_signatures'];
+    return sectionNames[currentSection] || 'unknown';
   };
 
   const saveToLocalStorage = () => {
