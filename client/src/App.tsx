@@ -80,6 +80,7 @@ function App() {
             <Route path="review" element={<MedicalReview />} />
             <Route path="patient-ehr/:patientId" element={<PatientEHR />} />
             <Route path="ehr-database" element={<SearchableEHR />} />
+            <Route path="nl-query" element={<NaturalLanguageQueryInterface />} />
             <Route path="certificates" element={<CertificateManagement />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
