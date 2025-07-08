@@ -18,7 +18,8 @@ import {
   Award,
   FolderOpen,
   BarChart3,
-  Database
+  Database,
+  Brain
 } from 'lucide-react';
 
 interface SidebarProps {
