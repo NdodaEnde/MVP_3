@@ -546,6 +546,21 @@ router.post('/:id/handoff', requireUser, async (req, res) => {
       estimatedTimeAtNextStation: getEstimatedStationTime(nextStation)
     };
     
+    // Send station handoff notifications
+    let notificationResults = null;
+    try {
+      notificationResults = await notificationService.sendStationHandoffNotification(handoffData);
+      console.log('Station handoff notifications sent:', notificationResults.stats);
+    } catch (notificationError) {
+      console.error('Failed to send handoff notifications:', notificationError);
+      // Don't fail the handoff if notifications fail - just log the error
+      notificationResults = {
+        success: false,
+        error: notificationError.message,
+        stats: { total: 0, sent: 0, failed: 0 }
+      };
+    }
+    
     res.json({
       success: true,
       message: `Patient successfully transferred to ${nextStation} station`,
@@ -555,7 +570,8 @@ router.post('/:id/handoff', requireUser, async (req, res) => {
         completed: true,
         completionPercentage: 100,
         completedAt: questionnaire.completedAt
-      }
+      },
+      notifications: notificationResults
     });
     
   } catch (error) {
