@@ -442,6 +442,7 @@ const questionnaireSchema = new mongoose.Schema({
   sectionProgress: {
     patient_demographics: { type: Boolean, default: false },
     medical_history: { type: Boolean, default: false },
+    physical_examination: { type: Boolean, default: false },
     periodic_health_history: { type: Boolean, default: false },
     working_at_heights_assessment: { type: Boolean, default: false },
     return_to_work_surveillance: { type: Boolean, default: false },
