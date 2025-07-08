@@ -560,45 +560,339 @@ router.post('/:id/handoff', requireUser, async (req, res) => {
   }
 });
 
-// Helper function for enhanced section validation
+// Enhanced section validation with comprehensive edge cases
 function validateSectionCompletion(sectionName, sectionData, examinationType) {
   const validationRules = {
     patient_demographics: (data) => {
-      return data.personal_info && 
-             data.personal_info.first_names && 
-             data.personal_info.surname && 
-             data.personal_info.id_number &&
-             data.employment_info &&
-             data.employment_info.position;
+      // Personal info validation
+      const personalInfo = data.personal_info || {};
+      const employmentInfo = data.employment_info || {};
+      
+      const requiredPersonalFields = [
+        personalInfo.first_names?.trim(),
+        personalInfo.surname?.trim(),
+        personalInfo.id_number?.trim(),
+        personalInfo.marital_status
+      ];
+      
+      const requiredEmploymentFields = [
+        employmentInfo.position?.trim(),
+        employmentInfo.department?.trim(),
+        employmentInfo.company_name?.trim()
+      ];
+      
+      // Check SA ID format
+      const { validateAndExtractSAID } = require('../utils/sa-id-validation');
+      const saIdValid = personalInfo.id_number ? 
+        validateAndExtractSAID(personalInfo.id_number).isValid : false;
+      
+      const personalComplete = requiredPersonalFields.every(field => field && field.length > 0);
+      const employmentComplete = requiredEmploymentFields.every(field => field && field.length > 0);
+      
+      return personalComplete && employmentComplete && saIdValid;
     },
+    
     medical_history: (data) => {
-      return data.current_conditions && 
-             Object.keys(data.current_conditions).length > 0 &&
-             data.respiratory_conditions &&
-             Object.keys(data.respiratory_conditions).length > 0;
+      const currentConditions = data.current_conditions || {};
+      const respiratoryConditions = data.respiratory_conditions || {};
+      
+      // Ensure at least some medical questions are answered (not all undefined)
+      const conditionsAnswered = Object.values(currentConditions)
+        .filter(value => value !== undefined && value !== null).length;
+      const respiratoryAnswered = Object.values(respiratoryConditions)
+        .filter(value => value !== undefined && value !== null).length;
+      
+      // Require at least 3 conditions to be answered in each category
+      return conditionsAnswered >= 3 && respiratoryAnswered >= 2;
     },
-    physical_exam: (data) => {
-      return data.height && data.weight && data.pulse_rate;
+    
+    physical_examination: (data) => {
+      const vitals = data.vitals || {};
+      const urinalysis = data.urinalysis || {};
+      
+      // Required vitals with validation ranges
+      const requiredVitals = [
+        vitals.height && vitals.height >= 100 && vitals.height <= 250,
+        vitals.weight && vitals.weight >= 30 && vitals.weight <= 300,
+        vitals.pulse_rate && vitals.pulse_rate >= 40 && vitals.pulse_rate <= 200
+      ];
+      
+      // Blood pressure validation (both systolic and diastolic required)
+      const bpValid = vitals.blood_pressure && 
+        vitals.blood_pressure.systolic >= 70 && vitals.blood_pressure.systolic <= 250 &&
+        vitals.blood_pressure.diastolic >= 40 && vitals.blood_pressure.diastolic <= 150;
+      
+      // Urinalysis validation (at least blood, protein, glucose must be set)
+      const urinalysisValid = urinalysis.blood && urinalysis.protein && urinalysis.glucose &&
+        ['positive', 'negative', 'trace'].includes(urinalysis.blood) &&
+        ['positive', 'negative', 'trace'].includes(urinalysis.protein) &&
+        ['positive', 'negative', 'trace'].includes(urinalysis.glucose);
+      
+      return requiredVitals.every(Boolean) && bpValid && urinalysisValid;
     },
+    
     working_at_heights_assessment: (data) => {
       if (examinationType === 'periodic' || examinationType === 'pre_employment') {
-        return data.fear_of_heights !== undefined && 
-               data.vertigo_dizziness !== undefined &&
-               data.balance_problems !== undefined;
+        // All critical safety questions must be answered
+        const requiredQuestions = [
+          'fear_of_heights',
+          'vertigo_dizziness',
+          'balance_problems',
+          'previous_falls',
+          'medication_affecting_balance'
+        ];
+        
+        return requiredQuestions.every(question => 
+          data[question] !== undefined && data[question] !== null
+        );
       }
       return true; // Not required for all exam types
     },
+    
     declarations_and_signatures: (data) => {
-      return data.employee_declaration && 
-             data.employee_declaration.information_correct === true && 
-             data.employee_declaration.no_misleading_information === true &&
-             data.employee_declaration.employee_name &&
-             data.employee_declaration.employee_signature;
+      const declaration = data.employee_declaration || {};
+      
+      // All required declarations must be true
+      const requiredDeclarations = [
+        declaration.information_correct === true,
+        declaration.no_misleading_information === true,
+        declaration.consent_to_medical_examination === true,
+        declaration.consent_to_information_sharing === true
+      ];
+      
+      // Employee name validation (must match demographics)
+      const nameValid = declaration.employee_name && 
+        declaration.employee_name.trim().length >= 3;
+      
+      // Digital signature validation
+      const signatureValid = declaration.employee_signature && 
+        declaration.employee_signature.startsWith('data:image/') &&
+        declaration.employee_signature.length > 100; // Ensure it's not empty signature
+      
+      // Signature date validation (must be recent)
+      const signatureDateValid = declaration.employee_signature_date &&
+        new Date(declaration.employee_signature_date) <= new Date() &&
+        new Date(declaration.employee_signature_date) >= new Date(Date.now() - 24 * 60 * 60 * 1000); // Within 24 hours
+      
+      return requiredDeclarations.every(Boolean) && nameValid && signatureValid && signatureDateValid;
     }
   };
   
   const validator = validationRules[sectionName];
-  return validator ? validator(sectionData) : false;
+  if (!validator) {
+    console.warn(`No validator found for section: ${sectionName}`);
+    return false;
+  }
+  
+  try {
+    return validator(sectionData);
+  } catch (error) {
+    console.error(`Validation error for section ${sectionName}:`, error);
+    return false;
+  }
+}
+
+// Enhanced completion calculation with detailed validation feedback
+router.get('/:id/validation-details', requireUser, async (req, res) => {
+  try {
+    const questionnaire = await Questionnaire.findById(req.params.id);
+    
+    if (!questionnaire) {
+      return res.status(404).json({ error: 'Questionnaire not found' });
+    }
+    
+    const validationDetails = {};
+    const sections = ['patient_demographics', 'medical_history', 'physical_examination', 'working_at_heights_assessment', 'declarations_and_signatures'];
+    
+    sections.forEach(section => {
+      const sectionData = questionnaire[section] || {};
+      const isComplete = validateSectionCompletion(section, sectionData, questionnaire.examination_type);
+      
+      validationDetails[section] = {
+        isComplete,
+        completionPercentage: calculateSectionCompletionPercentage(section, sectionData, questionnaire.examination_type),
+        missingFields: getMissingFields(section, sectionData, questionnaire.examination_type),
+        validationErrors: getValidationErrors(section, sectionData, questionnaire.examination_type)
+      };
+    });
+    
+    const overallCompletion = questionnaire.getCompletionPercentage();
+    const isReadyForHandoff = overallCompletion === 100 && 
+      Object.values(validationDetails).every(section => section.isComplete);
+    
+    res.json({
+      success: true,
+      overallCompletion,
+      isReadyForHandoff,
+      validationDetails,
+      nextRequiredAction: getNextRequiredAction(validationDetails),
+      estimatedTimeToComplete: estimateTimeToComplete(validationDetails)
+    });
+    
+  } catch (error) {
+    console.error('Error getting validation details:', error);
+    res.status(500).json({ error: 'Failed to get validation details' });
+  }
+});
+
+// Helper functions for detailed validation feedback
+function calculateSectionCompletionPercentage(sectionName, sectionData, examinationType) {
+  const totalFields = getTotalFieldsForSection(sectionName, examinationType);
+  const completedFields = getCompletedFieldsForSection(sectionName, sectionData);
+  
+  return Math.round((completedFields / Math.max(totalFields, 1)) * 100);
+}
+
+function getMissingFields(sectionName, sectionData, examinationType) {
+  const missingFields = [];
+  
+  switch (sectionName) {
+    case 'patient_demographics':
+      if (!sectionData.personal_info?.first_names) missingFields.push('First Names');
+      if (!sectionData.personal_info?.surname) missingFields.push('Surname');
+      if (!sectionData.personal_info?.id_number) missingFields.push('SA ID Number');
+      if (!sectionData.personal_info?.marital_status) missingFields.push('Marital Status');
+      if (!sectionData.employment_info?.position) missingFields.push('Position');
+      if (!sectionData.employment_info?.department) missingFields.push('Department');
+      break;
+      
+    case 'physical_examination':
+      if (!sectionData.vitals?.height) missingFields.push('Height');
+      if (!sectionData.vitals?.weight) missingFields.push('Weight');
+      if (!sectionData.vitals?.pulse_rate) missingFields.push('Pulse Rate');
+      if (!sectionData.vitals?.blood_pressure?.systolic) missingFields.push('Systolic Blood Pressure');
+      if (!sectionData.vitals?.blood_pressure?.diastolic) missingFields.push('Diastolic Blood Pressure');
+      if (!sectionData.urinalysis?.blood) missingFields.push('Urinalysis - Blood');
+      if (!sectionData.urinalysis?.protein) missingFields.push('Urinalysis - Protein');
+      if (!sectionData.urinalysis?.glucose) missingFields.push('Urinalysis - Glucose');
+      break;
+      
+    case 'declarations_and_signatures':
+      if (!sectionData.employee_declaration?.information_correct) missingFields.push('Information Accuracy Declaration');
+      if (!sectionData.employee_declaration?.no_misleading_information) missingFields.push('Truth Declaration');
+      if (!sectionData.employee_declaration?.employee_name) missingFields.push('Employee Name');
+      if (!sectionData.employee_declaration?.employee_signature) missingFields.push('Digital Signature');
+      break;
+  }
+  
+  return missingFields;
+}
+
+function getValidationErrors(sectionName, sectionData, examinationType) {
+  const errors = [];
+  
+  if (sectionName === 'patient_demographics' && sectionData.personal_info?.id_number) {
+    const { validateAndExtractSAID } = require('../utils/sa-id-validation');
+    const validation = validateAndExtractSAID(sectionData.personal_info.id_number);
+    if (!validation.isValid) {
+      errors.push(`Invalid SA ID: ${validation.errors.join(', ')}`);
+    }
+  }
+  
+  if (sectionName === 'physical_examination') {
+    const vitals = sectionData.vitals || {};
+    if (vitals.height && (vitals.height < 100 || vitals.height > 250)) {
+      errors.push('Height must be between 100-250 cm');
+    }
+    if (vitals.weight && (vitals.weight < 30 || vitals.weight > 300)) {
+      errors.push('Weight must be between 30-300 kg');
+    }
+    if (vitals.pulse_rate && (vitals.pulse_rate < 40 || vitals.pulse_rate > 200)) {
+      errors.push('Pulse rate must be between 40-200 bpm');
+    }
+  }
+  
+  return errors;
+}
+
+function getNextRequiredAction(validationDetails) {
+  for (const [section, details] of Object.entries(validationDetails)) {
+    if (!details.isComplete && details.missingFields.length > 0) {
+      return {
+        section,
+        action: `Complete ${section.replace('_', ' ')}`,
+        missingFields: details.missingFields,
+        priority: section === 'declarations_and_signatures' ? 'high' : 'medium'
+      };
+    }
+  }
+  return { action: 'All sections complete', priority: 'low' };
+}
+
+function estimateTimeToComplete(validationDetails) {
+  const sectionTimes = {
+    patient_demographics: 3,
+    medical_history: 5,
+    physical_examination: 4,
+    working_at_heights_assessment: 2,
+    declarations_and_signatures: 2
+  };
+  
+  let totalMinutes = 0;
+  for (const [section, details] of Object.entries(validationDetails)) {
+    if (!details.isComplete) {
+      totalMinutes += sectionTimes[section] || 2;
+    }
+  }
+  
+  return `${totalMinutes} minutes`;
+}
+
+function getTotalFieldsForSection(sectionName, examinationType) {
+  const fieldCounts = {
+    patient_demographics: 8,
+    medical_history: 10,
+    physical_examination: 8,
+    working_at_heights_assessment: 5,
+    declarations_and_signatures: 5
+  };
+  
+  return fieldCounts[sectionName] || 5;
+}
+
+function getCompletedFieldsForSection(sectionName, sectionData) {
+  let completed = 0;
+  
+  switch (sectionName) {
+    case 'patient_demographics':
+      if (sectionData.personal_info?.first_names) completed++;
+      if (sectionData.personal_info?.surname) completed++;
+      if (sectionData.personal_info?.id_number) completed++;
+      if (sectionData.personal_info?.marital_status) completed++;
+      if (sectionData.employment_info?.position) completed++;
+      if (sectionData.employment_info?.department) completed++;
+      if (sectionData.employment_info?.company_name) completed++;
+      if (sectionData.employment_info?.employee_number) completed++;
+      break;
+      
+    case 'medical_history':
+      const conditions = sectionData.current_conditions || {};
+      const respiratory = sectionData.respiratory_conditions || {};
+      completed = Object.values(conditions).filter(v => v !== undefined).length +
+                 Object.values(respiratory).filter(v => v !== undefined).length;
+      break;
+      
+    case 'physical_examination':
+      if (sectionData.vitals?.height) completed++;
+      if (sectionData.vitals?.weight) completed++;
+      if (sectionData.vitals?.pulse_rate) completed++;
+      if (sectionData.vitals?.blood_pressure?.systolic) completed++;
+      if (sectionData.vitals?.blood_pressure?.diastolic) completed++;
+      if (sectionData.urinalysis?.blood) completed++;
+      if (sectionData.urinalysis?.protein) completed++;
+      if (sectionData.urinalysis?.glucose) completed++;
+      break;
+      
+    case 'declarations_and_signatures':
+      if (sectionData.employee_declaration?.information_correct) completed++;
+      if (sectionData.employee_declaration?.no_misleading_information) completed++;
+      if (sectionData.employee_declaration?.employee_name) completed++;
+      if (sectionData.employee_declaration?.employee_signature) completed++;
+      if (sectionData.employee_declaration?.employee_signature_date) completed++;
+      break;
+  }
+  
+  return completed;
 }
 
 // Helper function to generate medical alerts
