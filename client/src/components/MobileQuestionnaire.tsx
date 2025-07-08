@@ -700,10 +700,6 @@ function IntegratedQuestionnaireView({ patient, workflowData, setWorkflowData, s
       }, ...prev]);
     }
   };
-        read: false
-      }, ...prev]);
-    }
-  };
 
   const updateFormData = (path, value) => {
     setFormData(prev => {
