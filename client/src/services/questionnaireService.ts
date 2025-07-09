@@ -25,6 +25,20 @@ class QuestionnaireService {
   // Submit completed questionnaire
   async submitQuestionnaire(data: Questionnaire): Promise<QuestionnaireSubmissionResult> {
     try {
+      console.log('📤 QuestionnaireService: Submitting questionnaire', { 
+        hasPatientId: !!(data as any).patient_id,
+        dataKeys: Object.keys(data)
+      });
+
+      // 🔧 FIX: Add patient_id validation
+      if (!(data as any).patient_id) {
+        console.error('❌ No patient_id in submission data');
+        return {
+          success: false,
+          message: 'Patient ID is required for questionnaire submission'
+        };
+      }
+
       const response = await fetch(`${this.baseUrl}/submit`, {
         method: 'POST',
         headers: {
@@ -34,16 +48,19 @@ class QuestionnaireService {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ HTTP Error:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
+      console.log('✅ Questionnaire submission successful:', result);
       return result;
     } catch (error) {
-      console.error('Error submitting questionnaire:', error);
+      console.error('❌ Error submitting questionnaire:', error);
       return {
         success: false,
-        message: 'Failed to submit questionnaire. Please try again.',
+        message: error instanceof Error ? error.message : 'Failed to submit questionnaire. Please try again.',
       };
     }
   }
@@ -339,43 +356,41 @@ class QuestionnaireService {
     return { isComplete, warnings, requiresReview };
   }
 
-  private validatePeriodicHealth(periodicHealth: any): { isComplete: boolean } {
-    if (!periodicHealth) {
+  private validatePeriodicHealth(periodicData: any): { isComplete: boolean } {
+    if (!periodicData) {
       return { isComplete: false };
     }
-
-    // Check if at least one field is filled
-    const hasContent = periodicHealth.health_changes_since_last_exam ||
-                     periodicHealth.new_medical_conditions?.length > 0 ||
-                     periodicHealth.medication_changes ||
-                     periodicHealth.illness_injury_treatment;
-
-    return { isComplete: hasContent };
+    
+    // Check if any required periodic health fields are filled
+    const hasHealthChanges = periodicData.health_changes_since_last_exam?.trim();
+    const hasMedicationInfo = periodicData.current_medications?.trim();
+    
+    return { 
+      isComplete: !!(hasHealthChanges || hasMedicationInfo) 
+    };
   }
 
-  private validateReturnToWork(returnToWork: any): { isComplete: boolean } {
-    if (!returnToWork) {
+  private validateReturnToWork(returnToWorkData: any): { isComplete: boolean } {
+    if (!returnToWorkData) {
       return { isComplete: false };
     }
-
-    // Required fields for return to work
-    const hasRequiredFields = returnToWork.absence_reason &&
-                             returnToWork.absence_duration &&
-                             typeof returnToWork.medical_clearance === 'boolean';
-
-    return { isComplete: hasRequiredFields };
+    
+    // Check if required return to work fields are filled
+    const hasAbsenceReason = returnToWorkData.absence_reason?.trim();
+    const hasFitnessLevel = returnToWorkData.current_fitness_level?.trim();
+    
+    return { 
+      isComplete: !!(hasAbsenceReason || hasFitnessLevel) 
+    };
   }
 
-  private validateLifestyleFactors(lifestyleFactors: any): { isComplete: boolean } {
-    if (!lifestyleFactors) {
-      return { isComplete: false };
+  private validateLifestyleFactors(lifestyleData: any): { isComplete: boolean } {
+    if (!lifestyleData) {
+      return { isComplete: true }; // Optional section
     }
-
-    // At least smoking and exercise status should be provided
-    const hasBasicInfo = lifestyleFactors.smoking?.status &&
-                        lifestyleFactors.exercise?.frequency;
-
-    return { isComplete: hasBasicInfo };
+    
+    // Lifestyle factors are generally optional, mark as complete if any data exists
+    return { isComplete: true };
   }
 
   private validateDeclarations(declarations: any): { isComplete: boolean; issues: string[] } {
@@ -412,53 +427,42 @@ class QuestionnaireService {
   }
 
   private calculateCompletionPercentage(data: any, examinationType: string): number {
-    let totalSections = 0;
-    let completedSections = 0;
+    let score = 0;
+    const maxScore = 100;
 
-    // Demographics (20%)
-    totalSections++;
-    if (this.validateDemographics(data.patient_demographics).isComplete) {
-      completedSections++;
+    // Demographics (25 points)
+    const demographicsStatus = this.validateDemographics(data.patient_demographics);
+    if (demographicsStatus.isComplete) {
+      score += 25;
     }
 
-    // Medical History (20%)
-    totalSections++;
+    // Medical History (25 points) 
     if (data.medical_history && Object.keys(data.medical_history).length > 0) {
-      completedSections++;
+      score += 25;
     }
 
-    // Lifestyle Factors (20%)
-    totalSections++;
-    if (this.validateLifestyleFactors(data.lifestyle_factors).isComplete) {
-      completedSections++;
-    }
-
-    // Examination-specific sections (20%)
-    totalSections++;
+    // Examination-specific sections (25 points)
     if (examinationType === 'working_at_heights') {
-      if (this.validateWorkingAtHeights(data.working_at_heights_assessment).isComplete) {
-        completedSections++;
-      }
+      const heightsStatus = this.validateWorkingAtHeights(data.working_at_heights_assessment);
+      if (heightsStatus.isComplete) score += 25;
     } else if (examinationType === 'periodic') {
-      if (this.validatePeriodicHealth(data.periodic_health_history).isComplete) {
-        completedSections++;
-      }
+      const periodicStatus = this.validatePeriodicHealth(data.periodic_health_history);
+      if (periodicStatus.isComplete) score += 25;
     } else if (examinationType === 'return_to_work') {
-      if (this.validateReturnToWork(data.return_to_work_surveillance).isComplete) {
-        completedSections++;
-      }
+      const returnStatus = this.validateReturnToWork(data.return_to_work_surveillance);
+      if (returnStatus.isComplete) score += 25;
     } else {
-      // For other examination types, assume section is complete if no specific requirements
-      completedSections++;
+      // For pre_employment and exit, no additional sections required
+      score += 25;
     }
 
-    // Declarations (20%)
-    totalSections++;
-    if (this.validateDeclarations(data.declarations_and_signatures).isComplete) {
-      completedSections++;
+    // Declarations and Signatures (25 points)
+    const declarationsStatus = this.validateDeclarations(data.declarations_and_signatures);
+    if (declarationsStatus.isComplete) {
+      score += 25;
     }
 
-    return Math.round((completedSections / totalSections) * 100);
+    return Math.min(score, maxScore);
   }
 
   private validateSAID(idNumber: string): boolean {
@@ -541,6 +545,53 @@ class QuestionnaireService {
       isValid: true
     };
   }
+
+  // 🔧 NEW: Helper method for patient ID submissions
+  async submitQuestionnaireWithPatientId(patientId: string, data: any): Promise<QuestionnaireSubmissionResult> {
+    try {
+      console.log('📤 Submitting questionnaire with patient ID:', patientId);
+      
+      // Ensure the data has the patient_id field that your backend expects
+      const submissionData = {
+        ...data,
+        patient_id: patientId,
+        metadata: {
+          ...data.metadata,
+          submission_timestamp: new Date().toISOString(),
+          submitted_online: navigator.onLine,
+        }
+      };
+
+      return await this.submitQuestionnaire(submissionData as Questionnaire);
+    } catch (error) {
+      console.error('❌ Error in submitQuestionnaireWithPatientId:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Submission failed'
+      };
+    }
+  }
+
+  // 🔧 NEW: Convenience method for forms
+  async submitCompleteQuestionnaire(data: any): Promise<QuestionnaireSubmissionResult> {
+    // This method bridges the gap between your form data and the service
+    const patientId = data.patient_id;
+    
+    if (!patientId) {
+      console.error('❌ No patient_id provided to submitCompleteQuestionnaire');
+      return {
+        success: false,
+        message: 'Patient ID is required'
+      };
+    }
+
+    return await this.submitQuestionnaireWithPatientId(patientId, data);
+  }
 }
 
 export const questionnaireService = new QuestionnaireService();
+
+// 🔧 NEW: Export convenience function for your forms
+export const submitCompleteQuestionnaire = (data: any) => {
+  return questionnaireService.submitCompleteQuestionnaire(data);
+};
