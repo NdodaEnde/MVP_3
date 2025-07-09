@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const questionnaireSchema = new mongoose.Schema({
   // References
   patient: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true },
-  examination: { type: mongoose.Schema.Types.ObjectId, ref: 'Examination', required: true },
+  organization: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
+  examination: { type: mongoose.Schema.Types.ObjectId, ref: 'Examination' },
   
   // Metadata
   questionnaire_id: { type: String, unique: true },
@@ -11,9 +12,14 @@ const questionnaireSchema = new mongoose.Schema({
   employee_id: String,
   employee_number: String,
   protocol: String,
+  status: {
+    type: String,
+    enum: ['draft', 'in_progress', 'completed', 'reviewed', 'cancelled'],
+    default: 'draft'
+  },
   examination_type: {
     type: String,
-    enum: ['pre_employment', 'periodic', 'exit', 'return_to_work'],
+    enum: ['pre_employment', 'periodic', 'exit', 'return_to_work', 'working_at_heights'],
     required: true
   },
   examination_date: Date,
@@ -273,26 +279,42 @@ const questionnaireSchema = new mongoose.Schema({
       illness_injury_treatment: String,
       family_history_changes: String,
       occupational_risk_profile_changes: String,
-      current_medications: String
+      current_medications: String,
+      lifestyle_changes: String,
+      new_symptoms: String
+    },
+    previous_examination_results: {
+      last_examination_date: Date,
+      last_examination_outcome: {
+        type: String,
+        enum: ['fit', 'unfit', 'fit_with_restrictions']
+      },
+      restrictions_previously_imposed: String,
+      follow_up_required: Boolean
     },
     appearance_comment: String
   },
   
-  // Working at Heights Assessment
+  // Working at Heights Assessment (11-question format)
   working_at_heights_assessment: {
-    fear_of_heights: Boolean,
-    vertigo_dizziness: Boolean,
-    balance_problems: Boolean,
-    previous_falls: Boolean,
-    medication_affecting_balance: Boolean,
-    vision_problems: Boolean,
-    hearing_problems: Boolean,
-    mobility_restrictions: Boolean,
-    physical_fitness_level: {
+    q1_advised_not_work_height: Boolean,
+    q2_serious_accident: Boolean,
+    q3_fear_heights_spaces: Boolean,
+    q4_fits_seizures: Boolean,
+    q5_suicide_thoughts: Boolean,
+    q6_mental_health_professional: Boolean,
+    q7_thoughts_spirits: Boolean,
+    q8_substance_abuse: Boolean,
+    q9_other_problems: Boolean,
+    q10_informed_tasks: Boolean,
+    q11_chronic_diseases: Boolean,
+    q12_additional_comments: String,
+    risk_assessment_score: Number,
+    clearance_status: {
       type: String,
-      enum: ['excellent', 'good', 'fair', 'poor']
-    },
-    specific_concerns: String
+      enum: ['cleared', 'restricted', 'prohibited', 'pending_review'],
+      default: 'pending_review'
+    }
   },
   
   // Return to Work Surveillance

@@ -421,29 +421,31 @@ function IntegratedQuestionnaireView({ patient, workflowData, setWorkflowData, s
   const autoSaveToWorkflow = async () => {
     setAutoSaveStatus('saving');
     try {
-      if (!patient?.questionnaireId) {
-        console.warn('No questionnaire ID available for auto-save');
+      if (!patient?._id) {
+        console.warn('No patient ID available for auto-save');
         setAutoSaveStatus('saved');
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/questionnaires/${patient.questionnaireId}/update-form`, {
-        method: 'PUT',
+      const response = await fetch(`/api/questionnaires/draft`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          formData: {
-            patient_demographics: formData,
-            medical_history: formData.medical_history,
-            physical_exam: formData.physical_exam,
-            working_at_heights_assessment: formData.working_at_heights,
-            declarations_and_signatures: {
-              employee_declaration: formData.employee_declaration
-            }
+          patient_id: patient._id,
+          patient_demographics: formData,
+          medical_history: formData.medical_history,
+          physical_examination: formData.physical_exam,
+          working_at_heights_assessment: formData.working_at_heights,
+          declarations_and_signatures: {
+            employee_declaration: formData.employee_declaration
           },
-          currentSection: getCurrentSectionName()
+          metadata: {
+            examination_type: patient.examinationType || 'pre_employment',
+            current_section: getCurrentSectionName(),
+            last_saved: new Date().toISOString()
+          }
         })
       });
 
@@ -595,39 +597,41 @@ function IntegratedQuestionnaireView({ patient, workflowData, setWorkflowData, s
     setSubmissionStatus('submitting');
 
     try {
-      // First, update the backend with final form data
-      const updateResponse = await fetch(`${import.meta.env.VITE_API_URL}/questionnaires/${patient.questionnaireId}/update-form`, {
-        method: 'PUT',
+      // Submit the completed questionnaire using our API
+      const submitResponse = await fetch(`/api/questionnaires/submit`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          formData: {
-            patient_demographics: formData,
-            medical_history: formData.medical_history,
-            physical_exam: formData.physical_exam,
-            working_at_heights_assessment: formData.working_at_heights,
-            declarations_and_signatures: {
-              employee_declaration: formData.employee_declaration
-            }
+          patient_id: patient._id,
+          patient_demographics: formData,
+          medical_history: formData.medical_history,
+          physical_examination: formData.physical_exam,
+          working_at_heights_assessment: formData.working_at_heights,
+          declarations_and_signatures: {
+            employee_declaration: formData.employee_declaration
           },
-          currentSection: 'declarations_and_signatures'
+          metadata: {
+            examination_type: patient.examinationType || 'pre_employment',
+            submission_timestamp: new Date().toISOString(),
+            completion_time: Math.round((Date.now() - new Date(formData.workflow_metadata.start_time).getTime()) / 1000 / 60)
+          }
         })
       });
 
-      if (!updateResponse.ok) {
-        throw new Error('Failed to update questionnaire data');
+      if (!submitResponse.ok) {
+        throw new Error('Failed to submit questionnaire');
       }
 
-      const updateData = await updateResponse.json();
+      const submitData = await submitResponse.json();
       
-      // Verify completion is 100%
-      if (updateData.completionPercentage < 100) {
+      // Check if submission was successful
+      if (!submitData.success) {
         setNotifications(prev => [{
-          id: `incomplete_backend_${Date.now()}`,
+          id: `submission_failed_${Date.now()}`,
           type: 'error',
-          message: `Backend validation failed - questionnaire is ${updateData.completionPercentage}% complete`,
+          message: `Submission failed: ${submitData.message}`,
           timestamp: new Date(),
           read: false
         }, ...prev]);
@@ -635,50 +639,40 @@ function IntegratedQuestionnaireView({ patient, workflowData, setWorkflowData, s
         return;
       }
 
-      // Now perform the station handoff
-      const handoffResponse = await fetch(`${import.meta.env.VITE_API_URL}/questionnaires/${patient.questionnaireId}/handoff`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
-        body: JSON.stringify({
-          signature: formData.employee_declaration?.signature,
-          nextStation: 'vitals'
-        })
-      });
-
-      if (!handoffResponse.ok) {
-        const errorData = await handoffResponse.json();
-        throw new Error(errorData.error || 'Failed to complete station handoff');
-      }
-
-      const handoffData = await handoffResponse.json();
+      // Successful submission - use the data returned from our API
+      const nextStation = submitData.nextStation || 'vitals';
+      const medicalAlerts = submitData.medicalAlerts || [];
+      const questionnaireId = submitData.questionnaireId;
 
       // Update workflow status with real backend data
       setWorkflowData(prev => ({
         ...prev,
-        currentStation: 'vitals',
+        currentStation: nextStation,
         questionnaire_completed: true,
         handoff_time: new Date().toISOString(),
         progress: 100,
-        medical_alerts: handoffData.handoffData.medicalAlerts,
-        next_station_eta: handoffData.handoffData.estimatedTimeAtNextStation
+        medical_alerts: medicalAlerts,
+        questionnaire_id: questionnaireId
       }));
 
       // Create success notification with medical alerts
-      const alertsMessage = handoffData.handoffData.medicalAlerts.length > 0 
-        ? ` (${handoffData.handoffData.medicalAlerts.length} medical alerts)`
+      const alertsMessage = medicalAlerts.length > 0 
+        ? ` (${medicalAlerts.length} medical alerts)`
         : '';
 
       setNotifications(prev => [{
         id: `handoff_success_${Date.now()}`,
         type: 'handoff_success',
-        message: `${patient.name} - Questionnaire completed successfully, transferred to vitals station${alertsMessage}`,
+        message: `${patient.firstName} ${patient.surname} - Questionnaire completed successfully, transferred to ${nextStation} station${alertsMessage}`,
         timestamp: new Date(),
         read: false,
-        priority: handoffData.handoffData.medicalAlerts.some(a => a.severity === 'high') ? 'high' : 'normal',
-        patient_data: handoffData.handoffData
+        priority: medicalAlerts.some(a => a.includes('CRITICAL') || a.includes('URGENT')) ? 'high' : 'normal',
+        patient_data: { 
+          nextStation,
+          medicalAlerts,
+          questionnaireId,
+          requiresReview: submitData.requiresReview
+        }
       }, ...prev]);
 
       setSubmissionStatus('completed');
