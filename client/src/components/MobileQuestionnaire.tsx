@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { submitCompleteQuestionnaire, questionnaireService } from '@/services/questionnaireService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -422,59 +423,54 @@ function IntegratedQuestionnaireView({ patient, workflowData, setWorkflowData, s
     setAutoSaveStatus('saving');
     try {
       if (!patient?._id) {
-        console.warn('No patient ID available for auto-save');
+        console.warn('🚨 No patient ID available for auto-save - patient object:', patient);
         setAutoSaveStatus('saved');
         return;
       }
 
-      const response = await fetch(`/api/questionnaires/draft`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          patient_id: patient._id,
-          patient_demographics: formData,
-          medical_history: formData.medical_history,
-          physical_examination: formData.physical_exam,
-          working_at_heights_assessment: formData.working_at_heights,
-          declarations_and_signatures: {
-            employee_declaration: formData.employee_declaration
-          },
-          metadata: {
-            examination_type: patient.examinationType || 'pre_employment',
-            current_section: getCurrentSectionName(),
-            last_saved: new Date().toISOString()
-          }
-        })
-      });
+      console.log('💾 Auto-saving questionnaire for patient:', patient._id);
 
-      if (response.ok) {
-        const data = await response.json();
+      const draftData = {
+        patient_id: patient._id,
+        patient_demographics: formData,
+        medical_history: formData.medical_history,
+        physical_examination: formData.physical_exam,
+        working_at_heights_assessment: formData.working_at_heights,
+        declarations_and_signatures: {
+          employee_declaration: formData.employee_declaration
+        },
+        metadata: {
+          examination_type: patient.examinationType || 'pre_employment',
+          current_section: getCurrentSectionName(),
+          last_saved: new Date().toISOString()
+        }
+      };
+
+      const result = await questionnaireService.saveDraft(draftData);
+
+      if (result.success) {
+        console.log('✅ Auto-save successful');
         
-        // Update completion percentage from backend
-        setCompletionPercentage(data.completionPercentage);
-        
-        // Update workflow progress with backend data
+        // Update workflow progress
         setWorkflowData(prev => ({
           ...prev,
-          progress: data.completionPercentage,
-          currentStationProgress: data.completionPercentage,
-          lastSaved: data.lastSaved
+          progress: completionPercentage,
+          currentStationProgress: completionPercentage,
+          lastSaved: new Date().toISOString()
         }));
         
         // Add success notification
         setNotifications(prev => [{
           id: `auto_save_${Date.now()}`,
           type: 'auto_save',
-          message: `Questionnaire auto-saved - ${data.completionPercentage}% complete`,
+          message: `Questionnaire auto-saved - ${completionPercentage}% complete`,
           timestamp: new Date(),
           read: false
         }, ...prev.slice(0, 4)]);
         
         setAutoSaveStatus('saved');
       } else {
-        throw new Error('Failed to auto-save to backend');
+        throw new Error(result.message || 'Failed to auto-save');
       }
     } catch (error) {
       console.error('Auto-save error:', error);
@@ -597,34 +593,31 @@ function IntegratedQuestionnaireView({ patient, workflowData, setWorkflowData, s
     setSubmissionStatus('submitting');
 
     try {
-      // Submit the completed questionnaire using our API
-      const submitResponse = await fetch(`/api/questionnaires/submit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          patient_id: patient._id,
-          patient_demographics: formData,
-          medical_history: formData.medical_history,
-          physical_examination: formData.physical_exam,
-          working_at_heights_assessment: formData.working_at_heights,
-          declarations_and_signatures: {
-            employee_declaration: formData.employee_declaration
-          },
-          metadata: {
-            examination_type: patient.examinationType || 'pre_employment',
-            submission_timestamp: new Date().toISOString(),
-            completion_time: Math.round((Date.now() - new Date(formData.workflow_metadata.start_time).getTime()) / 1000 / 60)
-          }
-        })
-      });
-
-      if (!submitResponse.ok) {
-        throw new Error('Failed to submit questionnaire');
+      // 🔧 FIX: Use our enhanced questionnaireService with proper validation
+      console.log('🚀 MobileQuestionnaire: Starting submission with patient:', patient?._id);
+      
+      if (!patient?._id) {
+        throw new Error('No patient ID available for submission');
       }
 
-      const submitData = await submitResponse.json();
+      const submissionData = {
+        patient_id: patient._id,
+        patient_demographics: formData,
+        medical_history: formData.medical_history,
+        physical_examination: formData.physical_exam,
+        working_at_heights_assessment: formData.working_at_heights,
+        declarations_and_signatures: {
+          employee_declaration: formData.employee_declaration
+        },
+        metadata: {
+          examination_type: patient.examinationType || 'pre_employment',
+          submission_timestamp: new Date().toISOString(),
+          completion_time: Math.round((Date.now() - new Date(formData.workflow_metadata?.start_time || Date.now()).getTime()) / 1000 / 60)
+        }
+      };
+
+      console.log('📤 Submitting questionnaire data:', submissionData);
+      const submitData = await submitCompleteQuestionnaire(submissionData);
       
       // Check if submission was successful
       if (!submitData.success) {
