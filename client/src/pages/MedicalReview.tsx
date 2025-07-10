@@ -11,21 +11,17 @@ import { getPatients, getPatientVitals, getPatientTests, getPatientQuestionnaire
 import CertificateService, { CertificateGenerationOptions } from '@/services/certificateService';
 import {
   Stethoscope,
+  Heart,
+  TestTube,
+  FileText,
   User,
   AlertTriangle,
   CheckCircle,
-  XCircle,
-  Heart,
-  Activity,
-  TestTube,
-  FileText,
+  Download,
   Eye,
-  Ear,
-  Thermometer,
-  Scale,
-  Clock,
-  TrendingUp,
-  Shield
+  Printer,
+  Mail,
+  Award
 } from 'lucide-react';
 
 export function MedicalReview() {
