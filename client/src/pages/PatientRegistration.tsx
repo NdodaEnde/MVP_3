@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createPatient } from '@/api/patients';
 import { validateAndExtractSAID } from '@/utils/sa-id-validation';
+import { useToast } from '@/hooks/useToast';
 import { UserPlus, Building, Phone, Mail, CreditCard } from 'lucide-react';
 
 const patientSchema = z.object({
