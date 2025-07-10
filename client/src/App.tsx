@@ -26,6 +26,7 @@ import MobileQuestionnaire from "./components/MobileQuestionnaire"
 import StationWorkflowIntegration from "./components/StationWorkflowIntegration"
 import NaturalLanguageQueryInterface from "./components/NaturalLanguageQueryInterface"
 import DigitalQuestionnaire from "./pages/DigitalQuestionnaire"
+import QuestionnaireCompletePage from "./pages/QuestionnaireCompletePage"
 
 
 // Diagnostic component to see what's happening
