@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig, AxiosError, InternalAxiosRequestConfig, Axio
 import JSONbig from 'json-bigint';
 
 const localApi = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
   headers: {
     'Content-Type': 'application/json',
   },
