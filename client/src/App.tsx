@@ -27,6 +27,7 @@ import StationWorkflowIntegration from "./components/StationWorkflowIntegration"
 import NaturalLanguageQueryInterface from "./components/NaturalLanguageQueryInterface"
 import DigitalQuestionnaire from "./pages/DigitalQuestionnaire"
 import QuestionnaireCompletePage from "./pages/QuestionnaireCompletePage"
+import SAIDValidationTest from "./components/SAIDValidationTest"
 
 
 // Diagnostic component to see what's happening
