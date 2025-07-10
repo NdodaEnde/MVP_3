@@ -44,6 +44,7 @@ import {
   SA_PROVINCES,
   type SAProvince
 } from '@/utils/sa-id-validation';
+import { diagnoseSAID, formatSAIDDiagnostic, explainSAID } from '@/utils/sa-id-diagnostic';
 import { ExaminationType } from '@/utils/examination-types';
 
 interface PersonalDemographicsSectionProps {
