@@ -215,12 +215,25 @@ export const PersonalDemographicsSection: React.FC<PersonalDemographicsSectionPr
               </FormControl>
               <FormDescription>
                 Enter 13-digit SA ID number. Age, gender, and date of birth will be automatically calculated.
+                Format: YYMMDD-GGGG-SA-Z (Year-Month-Day-Gender-Sequence-Citizenship-Checksum)
               </FormDescription>
               {saIdValidation.errors.length > 0 && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="whitespace-pre-line">
+                    {saIdValidation.errors.map((error, index) => (
+                      <div key={index} className={error.startsWith('Suggestions:') ? 'mt-2 font-semibold text-blue-600' : ''}>
+                        {error}
+                      </div>
+                    ))}
+                  </AlertDescription>
+                </Alert>
+              )}
+              {field.value?.length === 13 && saIdValidation.isValid && (
+                <Alert>
+                  <CheckCircle2 className="h-4 w-4" />
                   <AlertDescription>
-                    {saIdValidation.errors.join(', ')}
+                    ✅ Valid SA ID: {explainSAID(field.value)}
                   </AlertDescription>
                 </Alert>
               )}
