@@ -353,9 +353,6 @@ export function MedicalReview() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
-    const patient = patients.find(p => p._id === patientId);
-    setSelectedPatient(patient || null);
-  };
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
