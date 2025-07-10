@@ -77,6 +77,7 @@ function App() {
             <Route path="questionnaires" element={<MobileQuestionnaire />} />
             <Route path="questionnaires/mobile" element={<MobileQuestionnaire />} />
             <Route path="patients/:patientId/questionnaire" element={<DigitalQuestionnaire />} />
+            <Route path="questionnaire-complete" element={<QuestionnaireCompletePage />} />
             <Route path="workflow" element={<StationWorkflowIntegration />} />
             <Route path="tests" element={<MedicalTests />} />
             <Route path="review" element={<MedicalReview />} />
