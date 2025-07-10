@@ -111,13 +111,15 @@ export default function DigitalQuestionnairePage() {
             : "No medical concerns identified",
         });
 
-        // Navigate to next station or completion page
+        // Navigate to workflow completion page
         setTimeout(() => {
-          if (result.nextStation) {
-            navigate(`/patients/${patientId}/${result.nextStation}`);
-          } else {
-            navigate(`/patients/${patientId}/status`);
-          }
+          navigate(`/questionnaire-complete`, {
+            state: {
+              patientId,
+              patientName: `${patient?.firstName} ${patient?.surname}`,
+              examinationType: patient?.examinationType || 'pre-employment'
+            }
+          });
         }, 2000);
         
       } else {
