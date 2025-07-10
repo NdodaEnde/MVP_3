@@ -90,28 +90,19 @@ export function PatientRegistration() {
   const validateSAID = (idNumber: string) => {
     // 🔧 FIX: Use centralized SA ID validation utility
     try {
-      // Import the validation function dynamically
-      import('../../utils/sa-id-validation').then(({ validateAndExtractSAID }) => {
-        const validation = validateAndExtractSAID(idNumber);
-        
-        if (validation.isValid && validation.data) {
-          return { 
-            isValid: true, 
-            age: validation.data.age,
-            dateOfBirth: validation.data.dateOfBirth,
-            gender: validation.data.gender
-          };
-        } else {
-          console.warn('SA ID validation errors:', validation.errors);
-          return { isValid: false, age: 0 };
-        }
-      }).catch(error => {
-        console.error('SA ID validation error:', error);
-        return { isValid: false, age: 0 };
-      });
+      const validation = validateAndExtractSAID(idNumber);
       
-      // For now, return basic validation
-      return { isValid: /^\d{13}$/.test(idNumber), age: 46 };
+      if (validation.isValid && validation.data) {
+        return { 
+          isValid: true, 
+          age: validation.data.age,
+          dateOfBirth: validation.data.dateOfBirth,
+          gender: validation.data.gender
+        };
+      } else {
+        console.warn('SA ID validation errors:', validation.errors);
+        return { isValid: false, age: 0 };
+      }
     } catch (error) {
       console.error('SA ID validation error:', error);
       return { isValid: false, age: 0 };
