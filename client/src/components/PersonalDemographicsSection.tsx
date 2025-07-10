@@ -75,27 +75,44 @@ export const PersonalDemographicsSection: React.FC<PersonalDemographicsSectionPr
     onDataChange?.(watchedValues);
   }, [watchedValues, onDataChange]);
 
-  // Handle SA ID number change
+  // Handle SA ID number change with enhanced diagnostics
   const handleSAIDChange = (value: string) => {
     const cleanId = cleanSAIDInput(value);
     form.setValue('patient_demographics.personal_info.id_number', cleanId);
     
     if (cleanId.length === 13) {
-      const validation = validateAndExtractSAID(cleanId);
-      setSaIdValidation(validation);
+      // Use diagnostic tool for better error reporting
+      const diagnostic = diagnoseSAID(cleanId);
       
-      if (validation.isValid && validation.data) {
-        setIsAutoPopulating(true);
+      if (diagnostic.isValid) {
+        const validation = validateAndExtractSAID(cleanId);
+        setSaIdValidation(validation);
         
-        // Auto-populate extracted data
-        form.setValue('patient_demographics.personal_info.date_of_birth', validation.data.dateOfBirth);
-        form.setValue('patient_demographics.personal_info.age', validation.data.age);
-        form.setValue('patient_demographics.personal_info.gender', validation.data.gender);
+        if (validation.isValid && validation.data) {
+          setIsAutoPopulating(true);
+          
+          // Auto-populate extracted data
+          form.setValue('patient_demographics.personal_info.date_of_birth', validation.data.dateOfBirth);
+          form.setValue('patient_demographics.personal_info.age', validation.data.age);
+          form.setValue('patient_demographics.personal_info.gender', validation.data.gender);
+          
+          // Trigger callback
+          onSAIDChange?.(cleanId);
+          
+          setTimeout(() => setIsAutoPopulating(false), 1000);
+        }
+      } else {
+        // Enhanced error reporting with suggestions
+        const enhancedErrors = [
+          ...diagnostic.errors,
+          ...(diagnostic.suggestions.length > 0 ? ['Suggestions:', ...diagnostic.suggestions] : [])
+        ];
         
-        // Trigger callback
-        onSAIDChange?.(cleanId);
-        
-        setTimeout(() => setIsAutoPopulating(false), 1000);
+        setSaIdValidation({ 
+          isValid: false, 
+          errors: enhancedErrors,
+          data: diagnostic.extractedData 
+        });
       }
     } else {
       setSaIdValidation({ isValid: false, errors: [] });
