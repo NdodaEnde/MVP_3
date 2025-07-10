@@ -184,10 +184,15 @@ export function PatientRegistration() {
                           <FormControl>
                             <div className="relative">
                               <IdCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input 
+                              <Input
+                                {...field}
+                                value={field.value || ''}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  console.log('SA ID input changed:', e.target.value);
+                                }}
                                 placeholder="8501015009087" 
                                 className="pl-10"
-                                {...field} 
                               />
                             </div>
                           </FormControl>
