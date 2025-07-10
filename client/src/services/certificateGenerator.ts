@@ -306,6 +306,9 @@ export class DraftCertificateGenerator {
     return {};
   }
 }
+
+// Certificate Data Interface
+export interface CertificateData {
   // Header Information
   companyInfo: {
     name: string;
