@@ -233,7 +233,12 @@ export function PatientRegistration() {
                                 type="email" 
                                 placeholder="john@example.com" 
                                 className="pl-10"
-                                {...field} 
+                                {...field}
+                                value={field.value || ''}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  console.log('Email input changed:', e.target.value);
+                                }}
                               />
                             </div>
                           </FormControl>
