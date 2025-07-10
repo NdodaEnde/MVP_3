@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/useToast';
-import { getPatients, getPatientVitals, getPatientTests, getPatientQuestionnaire } from '@/api/patients';
+import { getPatients, getPatientVitals, getPatientTests } from '@/api/patients';
+import { getPatientQuestionnaire } from '@/api/questionnaires';
 import CertificateService, { CertificateGenerationOptions } from '@/services/certificateService';
 import {
   Stethoscope,
