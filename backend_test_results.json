@@ -1,28 +1,37 @@
 {
   "total_tests": 6,
-  "passed": 3,
-  "failed": 3,
-  "success_rate": "50.0%",
+  "passed": 6,
+  "failed": 0,
+  "success_rate": "100.0%",
   "results": [
     {
       "test": "Health Check",
-      "success": false,
-      "message": "Health endpoint returned 404",
-      "timestamp": "2025-07-10T21:08:04.129651",
-      "details": {}
+      "success": true,
+      "message": "Backend server is running (uptime: 14.137640787s)",
+      "timestamp": "2025-07-10T21:09:15.561717",
+      "details": {
+        "status": "healthy",
+        "features": {
+          "enhancedValidation": true,
+          "notificationService": true,
+          "performanceOptimization": true
+        }
+      }
     },
     {
       "test": "Database Connection",
-      "success": false,
-      "message": "Health check failed with status 404",
-      "timestamp": "2025-07-10T21:08:04.132346",
-      "details": {}
+      "success": true,
+      "message": "Database connection appears healthy (via health check)",
+      "timestamp": "2025-07-10T21:09:15.564004",
+      "details": {
+        "health_status": "healthy"
+      }
     },
     {
       "test": "API Endpoints Structure",
-      "success": false,
-      "message": "Some API endpoints are not accessible",
-      "timestamp": "2025-07-10T21:08:04.156888",
+      "success": true,
+      "message": "All expected API endpoints are accessible",
+      "timestamp": "2025-07-10T21:09:15.578699",
       "details": {
         "tested_endpoints": [
           "POST /patients/create",
@@ -35,7 +44,7 @@
       "test": "Patient Data Structure",
       "success": true,
       "message": "All required fields present in patient data structure",
-      "timestamp": "2025-07-10T21:08:04.156956",
+      "timestamp": "2025-07-10T21:09:15.578746",
       "details": {
         "required_fields": [
           "initials",
@@ -74,7 +83,7 @@
       "test": "SA ID Validation Logic",
       "success": true,
       "message": "SA ID 7807215422081 correctly calculates age as 46 years",
-      "timestamp": "2025-07-10T21:08:04.156975",
+      "timestamp": "2025-07-10T21:09:15.578766",
       "details": {
         "sa_id": "7807215422081",
         "extracted_date": "1978-07-21",
@@ -86,7 +95,7 @@
       "test": "Patient Creation - No Auth",
       "success": true,
       "message": "Correctly rejected request without authentication",
-      "timestamp": "2025-07-10T21:08:04.159610",
+      "timestamp": "2025-07-10T21:09:15.581265",
       "details": {
         "status_code": 401,
         "response": {
