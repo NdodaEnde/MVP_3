@@ -231,7 +231,6 @@ export function PatientRegistration() {
                                 type="email" 
                                 placeholder="john@example.com" 
                                 className="pl-10"
-                                {...field}
                                 value={field.value || ''}
                                 onChange={(e) => {
                                   field.onChange(e.target.value);
