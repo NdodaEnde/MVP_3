@@ -23,6 +23,8 @@ export default defineConfig({
       '.pythagora.ai'
     ],
     watch: {
+      usePolling: true,
+      interval: 1000,
       ignored: ['**/node_modules/**', '**/dist/**', '**/public/**', '**/log/**']
     }
   },
