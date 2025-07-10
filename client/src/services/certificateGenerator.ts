@@ -1,7 +1,311 @@
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, AlignmentType, TextRun, Header, Footer, ImageRun } from 'docx';
-import * as fs from 'fs';
+export interface DraftCertificateData {
+  // Patient and administrative data (auto-filled)
+  patientInfo: {
+    initials: string;
+    surname: string;
+    idNumber: string;
+    companyName: string;
+    jobTitle: string;
+    dateOfExamination: string;
+    expiryDate: string;
+    examinationType: 'pre-employment' | 'periodical' | 'exit';
+  };
+  
+  // Medical test results (auto-filled from system)
+  medicalTestResults: {
+    bloods: { done: boolean; results: string; };
+    vitalSigns: { 
+      bloodPressure: string; 
+      pulse: string; 
+      temperature: string; 
+      height: string; 
+      weight: string; 
+      bmi: string; 
+    };
+    vision: { done: boolean; results: string; };
+    hearing: { done: boolean; results: string; };
+    lungFunction: { done: boolean; results: string; };
+    drugScreen: { done: boolean; results: string; };
+    workingAtHeights: { done: boolean; results: string; };
+    xray: { done: boolean; results: string; };
+  };
+  
+  // Medical history summary (auto-filled from questionnaire)
+  medicalHistorySummary: {
+    significantConditions: string[];
+    medications: string[];
+    allergies: string[];
+    previousSurgeries: string[];
+    familyHistory: string[];
+  };
+  
+  // Doctor's Review Section (to be completed by doctor)
+  doctorReview: {
+    fitnessStatus: '' | 'fit' | 'fit-with-restriction' | 'fit-with-condition' | 'temporary-unfit' | 'unfit';
+    restrictions: string[];
+    referralActions: {
+      heights: boolean;
+      dustExposure: boolean;
+      motorisedEquipment: boolean;
+      wearHearingProtection: boolean;
+      confinedSpaces: boolean;
+      chemicalExposure: boolean;
+      wearSpectacles: boolean;
+      remainOnTreatment: boolean;
+    };
+    doctorComments: string;
+    clinicalNotes: string;
+    followUpRequired: boolean;
+    followUpDate?: string;
+    
+    // Signature and approval
+    practitionerName: string;
+    practiceNumber: string;
+    dateReviewed: string;
+    digitalSignature?: string;
+    officialStamp?: string;
+    approved: boolean;
+  };
+}
 
-export interface CertificateData {
+export class DraftCertificateGenerator {
+  
+  /**
+   * Generate a draft certificate pre-filled with patient data for doctor review
+   */
+  static async generateDraftCertificate(patientId: string): Promise<DraftCertificateData> {
+    // Fetch all patient data from SurgiScan
+    const patientData = await this.fetchPatientMedicalData(patientId);
+    
+    return {
+      patientInfo: this.extractPatientInfo(patientData),
+      medicalTestResults: this.extractTestResults(patientData),
+      medicalHistorySummary: this.extractMedicalHistory(patientData),
+      doctorReview: {
+        // Empty - to be filled by doctor
+        fitnessStatus: '',
+        restrictions: [],
+        referralActions: {
+          heights: false,
+          dustExposure: false,
+          motorisedEquipment: false,
+          wearHearingProtection: false,
+          confinedSpaces: false,
+          chemicalExposure: false,
+          wearSpectacles: false,
+          remainOnTreatment: false
+        },
+        doctorComments: '',
+        clinicalNotes: '',
+        followUpRequired: false,
+        practitionerName: '',
+        practiceNumber: '',
+        dateReviewed: new Date().toISOString().split('T')[0],
+        approved: false
+      }
+    };
+  }
+  
+  /**
+   * Finalize certificate after doctor review and approval
+   */
+  static async finalizeCertificate(
+    draftCertificate: DraftCertificateData,
+    doctorApproval: {
+      practitionerName: string;
+      practiceNumber: string;
+      digitalSignature: string;
+      officialStamp: string;
+    }
+  ): Promise<Buffer> {
+    // Validate doctor has completed all required fields
+    this.validateDoctorReview(draftCertificate);
+    
+    // Update with doctor's signature and stamp
+    draftCertificate.doctorReview.practitionerName = doctorApproval.practitionerName;
+    draftCertificate.doctorReview.practiceNumber = doctorApproval.practiceNumber;
+    draftCertificate.doctorReview.digitalSignature = doctorApproval.digitalSignature;
+    draftCertificate.doctorReview.officialStamp = doctorApproval.officialStamp;
+    draftCertificate.doctorReview.approved = true;
+    
+    // Generate final PDF certificate
+    const finalCertificateData = this.convertToFinalCertificate(draftCertificate);
+    const generator = new CertificateGenerator();
+    
+    return await generator.generateCertificate(finalCertificateData);
+  }
+  
+  private static extractPatientInfo(patientData: any) {
+    const nameParts = patientData.patient.name.split(' ');
+    const surname = nameParts[nameParts.length - 1];
+    const initials = nameParts.slice(0, -1).map((name: string) => name.charAt(0).toUpperCase()).join('');
+    
+    const examDate = new Date();
+    const expiryDate = new Date(examDate);
+    expiryDate.setFullYear(examDate.getFullYear() + 1);
+    
+    return {
+      initials,
+      surname,
+      idNumber: patientData.patient.idNumber,
+      companyName: patientData.patient.employer,
+      jobTitle: patientData.questionnaire?.jobTitle || 'Employee',
+      dateOfExamination: examDate.toISOString().split('T')[0],
+      expiryDate: expiryDate.toISOString().split('T')[0],
+      examinationType: patientData.patient.examinationType || 'pre-employment'
+    };
+  }
+  
+  private static extractTestResults(patientData: any) {
+    const vitals = patientData.vitals?.[0];
+    const tests = patientData.tests?.[0];
+    
+    return {
+      bloods: {
+        done: vitals ? true : false,
+        results: vitals ? this.formatBloodResults(vitals) : 'Not Done'
+      },
+      vitalSigns: {
+        bloodPressure: vitals ? `${vitals.bloodPressure?.systolic}/${vitals.bloodPressure?.diastolic} mmHg` : 'Not Recorded',
+        pulse: vitals ? `${vitals.pulse} bpm` : 'Not Recorded',
+        temperature: vitals ? `${vitals.temperature}°C` : 'Not Recorded',
+        height: vitals ? `${vitals.height} cm` : 'Not Recorded',
+        weight: vitals ? `${vitals.weight} kg` : 'Not Recorded',
+        bmi: vitals ? `${vitals.bmi}` : 'Not Calculated'
+      },
+      vision: {
+        done: tests?.vision ? true : false,
+        results: tests?.vision ? `L: ${tests.vision.leftEye}, R: ${tests.vision.rightEye}` : 'Not Done'
+      },
+      hearing: {
+        done: tests?.hearing ? true : false,
+        results: tests?.hearing ? `L: ${tests.hearing.leftEar}dB, R: ${tests.hearing.rightEar}dB` : 'Not Done'
+      },
+      lungFunction: {
+        done: tests?.lungFunction ? true : false,
+        results: tests?.lungFunction ? `FEV1: ${tests.lungFunction.fev1}%, FVC: ${tests.lungFunction.fvc}%` : 'Not Done'
+      },
+      drugScreen: {
+        done: tests?.drugScreen ? true : false,
+        results: tests?.drugScreen ? tests.drugScreen.result.toUpperCase() : 'Not Done'
+      },
+      workingAtHeights: {
+        done: patientData.questionnaire?.workingAtHeights ? true : false,
+        results: patientData.questionnaire?.workingAtHeights ? 'Assessed' : 'Not Assessed'
+      },
+      xray: {
+        done: false,
+        results: 'Not Done'
+      }
+    };
+  }
+  
+  private static extractMedicalHistory(patientData: any) {
+    const questionnaire = patientData.questionnaire;
+    
+    return {
+      significantConditions: this.extractConditions(questionnaire?.medicalHistory),
+      medications: questionnaire?.medications || [],
+      allergies: questionnaire?.allergies || [],
+      previousSurgeries: questionnaire?.surgeries || [],
+      familyHistory: questionnaire?.familyHistory || []
+    };
+  }
+  
+  private static extractConditions(medicalHistory: any): string[] {
+    if (!medicalHistory) return [];
+    
+    const conditions = [];
+    if (medicalHistory.diabetes) conditions.push('Diabetes Mellitus');
+    if (medicalHistory.hypertension) conditions.push('Hypertension');
+    if (medicalHistory.heartDisease) conditions.push('Heart Disease');
+    if (medicalHistory.epilepsy) conditions.push('Epilepsy');
+    if (medicalHistory.asthma) conditions.push('Asthma');
+    
+    return conditions;
+  }
+  
+  private static formatBloodResults(vitals: any): string {
+    const results = [];
+    
+    if (vitals.bloodPressure) {
+      const { systolic, diastolic } = vitals.bloodPressure;
+      if (systolic >= 140 || diastolic >= 90) {
+        results.push('Hypertension');
+      } else {
+        results.push('Normal BP');
+      }
+    }
+    
+    // Add other blood-related results here
+    return results.join(', ') || 'Normal';
+  }
+  
+  private static validateDoctorReview(certificate: DraftCertificateData) {
+    const review = certificate.doctorReview;
+    
+    if (!review.fitnessStatus) {
+      throw new Error('Doctor must determine fitness status');
+    }
+    
+    if (!review.practitionerName) {
+      throw new Error('Practitioner name is required');
+    }
+    
+    if (!review.practiceNumber) {
+      throw new Error('Practice number is required');
+    }
+    
+    if (review.fitnessStatus !== 'fit' && review.restrictions.length === 0 && !review.doctorComments) {
+      throw new Error('Restrictions or comments required for non-fit status');
+    }
+  }
+  
+  private static convertToFinalCertificate(draft: DraftCertificateData): CertificateData {
+    return {
+      companyInfo: {
+        name: "BLUECOLLAR OCCUPATIONAL HEALTH",
+        address: "123 Medical Plaza, Johannesburg, 2000, South Africa",
+        phone: "+27 11 123 4567",
+        email: "certificates@bluecollar.co.za"
+      },
+      practitioner: {
+        name: draft.doctorReview.practitionerName,
+        practiceNumber: draft.doctorReview.practiceNumber,
+        qualifications: "MBChB, DOH, FCOEM"
+      },
+      patient: draft.patientInfo,
+      examinationType: draft.patientInfo.examinationType,
+      medicalTests: {
+        bloods: draft.medicalTestResults.bloods,
+        ear: { done: false, results: 'Not Done' },
+        nearVision: draft.medicalTestResults.vision,
+        sizeDepth: { done: false, results: 'Not Done' },
+        nightVision: { done: false, results: 'Not Done' },
+        hearing: draft.medicalTestResults.hearing,
+        workingAtHeights: draft.medicalTestResults.workingAtHeights,
+        lungFunction: draft.medicalTestResults.lungFunction,
+        xray: draft.medicalTestResults.xray,
+        drugScreen: draft.medicalTestResults.drugScreen
+      },
+      referralActions: draft.doctorReview.referralActions,
+      restrictions: draft.doctorReview.restrictions,
+      fitnessStatus: draft.doctorReview.fitnessStatus,
+      comments: draft.doctorReview.doctorComments,
+      signatures: {
+        practitioner: draft.doctorReview.practitionerName,
+        date: draft.doctorReview.dateReviewed,
+        stamp: draft.doctorReview.officialStamp
+      }
+    };
+  }
+  
+  private static async fetchPatientMedicalData(patientId: string) {
+    // Implementation to fetch all patient data
+    // This would call the existing SurgiScan APIs
+    return {};
+  }
+}
   // Header Information
   companyInfo: {
     name: string;
