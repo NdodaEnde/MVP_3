@@ -3,16 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getPatients } from '@/api/patients';
-import { getPatientVitals } from '@/api/vitals';
-import { getPatientTests } from '@/api/tests';
-import { getPatientQuestionnaire } from '@/api/questionnaires';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/useToast';
-import { Patient, VitalSigns, TestResults } from '@/types';
+import { getPatients, getPatientVitals, getPatientTests, getPatientQuestionnaire } from '@/api/patients';
+import CertificateService, { CertificateGenerationOptions } from '@/services/certificateService';
 import {
   Stethoscope,
   User,
