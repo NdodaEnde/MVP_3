@@ -88,18 +88,26 @@ export function PatientRegistration() {
   };
 
   const validateSAID = (idNumber: string) => {
-    if (idNumber.length === 13) {
-      const year = parseInt(idNumber.substring(0, 2));
-      const month = parseInt(idNumber.substring(2, 4));
-      const day = parseInt(idNumber.substring(4, 6));
+    // 🔧 FIX: Use centralized SA ID validation utility
+    try {
+      const { validateAndExtractSAID } = require('../../utils/sa-id-validation');
+      const validation = validateAndExtractSAID(idNumber);
       
-      const currentYear = new Date().getFullYear() % 100;
-      const fullYear = year <= currentYear ? 2000 + year : 1900 + year;
-      const age = new Date().getFullYear() - fullYear;
-      
-      return { isValid: month >= 1 && month <= 12 && day >= 1 && day <= 31, age };
+      if (validation.isValid && validation.data) {
+        return { 
+          isValid: true, 
+          age: validation.data.age,
+          dateOfBirth: validation.data.dateOfBirth,
+          gender: validation.data.gender
+        };
+      } else {
+        console.warn('SA ID validation errors:', validation.errors);
+        return { isValid: false, age: 0 };
+      }
+    } catch (error) {
+      console.error('SA ID validation error:', error);
+      return { isValid: false, age: 0 };
     }
-    return { isValid: false, age: 0 };
   };
 
   const idValidation = validateSAID(form.watch('idNumber') || '');
