@@ -260,7 +260,18 @@ export function PatientQueue() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {patient.status !== 'completed' && (
+                        {/* 🔧 FIX: Add Start Questionnaire button for checked-in patients */}
+                        {patient.status === 'checked-in' && (
+                          <Button
+                            size="sm"
+                            onClick={() => navigate(`/patients/${patient._id}/questionnaire`)}
+                            className="bg-green-500 hover:bg-green-600"
+                          >
+                            <FileText className="h-4 w-4 mr-1" />
+                            Start Questionnaire
+                          </Button>
+                        )}
+                        {patient.status !== 'completed' && patient.status !== 'checked-in' && (
                           <Button
                             size="sm"
                             onClick={() => handleStatusUpdate(patient._id, getNextStatus(patient.status))}

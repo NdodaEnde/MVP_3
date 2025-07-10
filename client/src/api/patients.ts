@@ -1,117 +1,93 @@
 import api from './api';
 import { Patient, Questionnaire } from '../types';
 
-// Mock data for development
-const mockPatients = [
-  {
-    _id: '1',
-    firstName: 'John',
-    surname: 'Doe',
-    name: 'John Doe', // Added for PatientQueue component
-    idNumber: '8001010001',
-    age: 44,
-    phone: '0123456789',
-    email: 'john.doe@example.com',
-    employerName: 'Tech Corp',
-    employer: 'Tech Corp', // Added for PatientQueue component
-    position: 'Software Developer',
-    department: 'IT',
-    status: 'checked-in',
-    examinations: [],
-    updatedAt: new Date().toISOString(),
-    examinationType: 'Pre-employment'
-  },
-  {
-    _id: '2',
-    firstName: 'Jane',
-    surname: 'Smith',
-    name: 'Jane Smith', // Added for PatientQueue component
-    idNumber: '8502020002',
-    age: 39,
-    phone: '0987654321',
-    email: 'jane.smith@example.com',
-    employerName: 'Health Solutions',
-    employer: 'Health Solutions', // Added for PatientQueue component
-    position: 'Nurse',
-    department: 'Medical',
-    status: 'questionnaire',
-    examinations: [],
-    updatedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 minutes ago
-    examinationType: 'Annual'
-  },
-  {
-    _id: '3',
-    firstName: 'Mike',
-    surname: 'Johnson',
-    name: 'Mike Johnson',
-    idNumber: '7903030003',
-    age: 45,
-    phone: '0111222333',
-    email: 'mike.johnson@example.com',
-    employerName: 'Mining Corp',
-    employer: 'Mining Corp',
-    position: 'Engineer',
-    department: 'Operations',
-    status: 'nurse',
-    examinations: [],
-    updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
-    examinationType: 'Return to work'
-  },
-  {
-    _id: '4',
-    firstName: 'Sarah',
-    surname: 'Williams',
-    name: 'Sarah Williams',
-    idNumber: '8804040004',
-    age: 36,
-    phone: '0444555666',
-    email: 'sarah.williams@example.com',
-    employerName: 'Finance Ltd',
-    employer: 'Finance Ltd',
-    position: 'Accountant',
-    department: 'Finance',
-    status: 'doctor',
-    examinations: [],
-    updatedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
-    examinationType: 'Periodic'
-  },
-  {
-    _id: '5',
-    firstName: 'David',
-    surname: 'Brown',
-    name: 'David Brown',
-    idNumber: '8705050005',
-    age: 37,
-    phone: '0777888999',
-    email: 'david.brown@example.com',
-    employerName: 'Construction Co',
-    employer: 'Construction Co',
-    position: 'Supervisor',
-    department: 'Operations',
-    status: 'completed',
-    examinations: [],
-    updatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
-    examinationType: 'Pre-employment'
+// Dynamic mock data for development - stored in localStorage for persistence
+const getStoredPatients = () => {
+  const stored = localStorage.getItem('mockPatients');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Error parsing stored patients:', e);
+    }
   }
-];
+  return [];
+};
+
+const saveStoredPatients = (patients: any[]) => {
+  localStorage.setItem('mockPatients', JSON.stringify(patients));
+};
+
+// Initialize with some default mock data if none exists
+const initializeMockData = () => {
+  const stored = getStoredPatients();
+  if (stored.length === 0) {
+    const defaultPatients = [
+      {
+        _id: '1',
+        firstName: 'John',
+        surname: 'Doe',
+        name: 'John Doe',
+        idNumber: '8001010001',
+        age: 44,
+        phone: '0123456789',
+        email: 'john.doe@example.com',
+        employerName: 'Tech Corp',
+        employer: 'Tech Corp',
+        position: 'Software Developer',
+        department: 'IT',
+        status: 'checked-in',
+        examinations: [],
+        updatedAt: new Date().toISOString(),
+        examinationType: 'pre-employment'
+      },
+      {
+        _id: '2',
+        firstName: 'Jane',
+        surname: 'Smith',
+        name: 'Jane Smith',
+        idNumber: '8502020002',
+        age: 39,
+        phone: '0987654321',
+        email: 'jane.smith@example.com',
+        employerName: 'Health Solutions',
+        employer: 'Health Solutions',
+        position: 'Nurse',
+        department: 'Medical',
+        status: 'questionnaire',
+        examinations: [],
+        updatedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+        examinationType: 'periodic'
+      }
+    ];
+    saveStoredPatients(defaultPatients);
+    return defaultPatients;
+  }
+  return stored;
+};
+
+// Initialize mock data on module load
+const mockPatients = initializeMockData();
 
 // Description: Get all patients with optional filtering
 // Endpoint: GET /api/patients
 // Request: { status?: string, employer?: string, page?: number, limit?: number }
 // Response: { patients: Patient[], total: number, page: number, totalPages: number }
 export const getPatients = async (params?: { status?: string; employer?: string; page?: number; limit?: number }) => {
-  // DEVELOPMENT: Return mock data instead of making API calls
+  // DEVELOPMENT: Return dynamic mock data from localStorage
   if (process.env.NODE_ENV === 'development') {
-    console.log("🔍 API DEBUG: Returning mock patient data");
+    console.log("🔍 API DEBUG: Returning dynamic mock patient data");
     return new Promise((resolve) => {
       setTimeout(() => {
+        const currentPatients = getStoredPatients();
+        console.log("🔍 API DEBUG: Current patients count:", currentPatients.length);
         resolve({
-          patients: mockPatients,
-          total: mockPatients.length,
+          patients: currentPatients,
+          total: currentPatients.length,
           page: 1,
           totalPages: 1
         });
-      }, 500); // Simulate network delay
+      }, 500);
     });
   }
   
@@ -128,13 +104,14 @@ export const getPatients = async (params?: { status?: string; employer?: string;
 // Request: Patient registration data
 // Response: { patient: Patient, examination: Examination, success: boolean }
 export const createPatient = async (data: {
-  initials: string;
-  firstName: string;
-  surname: string;
+  name?: string;
+  initials?: string;
+  firstName?: string;
+  surname?: string;
   idNumber: string;
-  dateOfBirth: string;
-  maritalStatus: string;
-  gender: string;
+  dateOfBirth?: string;
+  maritalStatus?: string;
+  gender?: string;
   phone: string;
   email: string;
   address?: {
@@ -143,7 +120,8 @@ export const createPatient = async (data: {
     postalCode?: string;
     province?: string;
   };
-  employerName: string;
+  employer?: string;
+  employerName?: string;
   employerID?: string;
   position?: string;
   department?: string;
@@ -151,18 +129,42 @@ export const createPatient = async (data: {
   examinationType: string;
   location?: string;
 }) => {
-  // DEVELOPMENT: Return mock success response
+  // DEVELOPMENT: Create and store new patient in localStorage
   if (process.env.NODE_ENV === 'development') {
-    console.log("🔍 API DEBUG: Creating mock patient:", data);
+    console.log("🔍 API DEBUG: Creating and storing patient:", data);
     return new Promise((resolve) => {
       setTimeout(() => {
+        const currentPatients = getStoredPatients();
         const newPatient = {
           _id: Date.now().toString(),
+          name: data.name || `${data.firstName || ''} ${data.surname || ''}`.trim(),
+          firstName: data.firstName || data.name?.split(' ')[0] || '',
+          surname: data.surname || data.name?.split(' ').slice(1).join(' ') || '',
+          idNumber: data.idNumber,
+          phone: data.phone,
+          email: data.email,
+          employer: data.employer || data.employerName || '',
+          employerName: data.employerName || data.employer || '',
+          position: data.position || '',
+          department: data.department || '',
+          employeeNumber: data.employeeNumber || '',
+          examinationType: data.examinationType,
+          status: 'checked-in',
+          examinations: [],
+          updatedAt: new Date().toISOString(),
+          // Add all other fields from registration
           ...data,
-          age: new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear(),
-          status: 'registered',
-          examinations: []
+          // Calculate age if dateOfBirth provided
+          age: data.dateOfBirth ? new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear() : undefined
         };
+        
+        // Add to stored patients
+        const updatedPatients = [...currentPatients, newPatient];
+        saveStoredPatients(updatedPatients);
+        
+        console.log("✅ API DEBUG: Patient created with ID:", newPatient._id);
+        console.log("✅ API DEBUG: Total patients now:", updatedPatients.length);
+        
         resolve({
           patient: newPatient,
           examination: { _id: Date.now().toString(), patientId: newPatient._id },
@@ -185,16 +187,34 @@ export const createPatient = async (data: {
 // Request: { status: string, notes?: string }
 // Response: { patient: Patient, success: boolean, message: string }
 export const updatePatientStatus = async (patientId: string, status: string, notes?: string) => {
-  // DEVELOPMENT: Return mock success response
+  // DEVELOPMENT: Update patient in localStorage
   if (process.env.NODE_ENV === 'development') {
     console.log("🔍 API DEBUG: Updating patient status:", { patientId, status, notes });
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({
-          patient: { ...mockPatients[0], _id: patientId, status },
-          success: true,
-          message: 'Patient status updated successfully'
-        });
+        const currentPatients = getStoredPatients();
+        const patientIndex = currentPatients.findIndex(p => p._id === patientId);
+        
+        if (patientIndex !== -1) {
+          currentPatients[patientIndex] = {
+            ...currentPatients[patientIndex],
+            status,
+            updatedAt: new Date().toISOString()
+          };
+          saveStoredPatients(currentPatients);
+          
+          resolve({
+            patient: currentPatients[patientIndex],
+            success: true,
+            message: 'Patient status updated successfully'
+          });
+        } else {
+          resolve({
+            patient: null,
+            success: false,
+            message: 'Patient not found'
+          });
+        }
       }, 300);
     });
   }
@@ -212,15 +232,20 @@ export const updatePatientStatus = async (patientId: string, status: string, not
 // Request: {}
 // Response: { patient: Patient }
 export const getPatientById = async (patientId: string) => {
-  // DEVELOPMENT: Return mock patient data
+  // DEVELOPMENT: Get patient from localStorage
   if (process.env.NODE_ENV === 'development') {
     console.log("🔍 API DEBUG: Getting patient by ID:", patientId);
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        const patient = mockPatients.find(p => p._id === patientId) || mockPatients[0];
+        const currentPatients = getStoredPatients();
+        const patient = currentPatients.find(p => p._id === patientId);
+        
         if (patient) {
-          resolve({ patient: { ...patient, _id: patientId } });
+          console.log("✅ API DEBUG: Found patient:", patient.firstName, patient.surname);
+          resolve({ patient });
         } else {
+          console.error("❌ API DEBUG: Patient not found with ID:", patientId);
+          console.log("🔍 API DEBUG: Available patient IDs:", currentPatients.map(p => p._id));
           reject(new Error('Patient not found'));
         }
       }, 300);

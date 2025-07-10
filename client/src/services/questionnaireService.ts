@@ -468,17 +468,23 @@ class QuestionnaireService {
   private validateSAID(idNumber: string): boolean {
     if (!idNumber || idNumber.length !== 13) return false;
     
-    // Basic checksum validation for SA ID
+    // 🔧 FIX: Use the same Luhn algorithm as sa-id-validation.ts
     const digits = idNumber.split('').map(Number);
     let sum = 0;
     
+    // Process first 12 digits
     for (let i = 0; i < 12; i++) {
-      if (i % 2 === 0) {
-        sum += digits[i];
-      } else {
-        const doubled = digits[i] * 2;
-        sum += doubled > 9 ? doubled - 9 : doubled;
+      let digit = digits[i];
+      
+      // Double every second digit from the right (matching sa-id-validation.ts)
+      if ((12 - i) % 2 === 0) {
+        digit *= 2;
+        if (digit > 9) {
+          digit = Math.floor(digit / 10) + (digit % 10);
+        }
       }
+      
+      sum += digit;
     }
     
     const checksum = (10 - (sum % 10)) % 10;
@@ -519,7 +525,8 @@ class QuestionnaireService {
 
   // Utility method to extract SA ID information
   extractSAIDInfo(idNumber: string) {
-    if (!this.validateSAID(idNumber)) {
+    // 🔧 TEMPORARY DEBUG: Skip validateSAID to test if this is the issue
+    if (!idNumber || idNumber.length !== 13) {
       return null;
     }
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,7 @@ type PatientFormData = z.infer<typeof patientSchema>;
 export function PatientRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const form = useForm<PatientFormData>({
     resolver: zodResolver(patientSchema),
@@ -42,13 +44,39 @@ export function PatientRegistration() {
   const onSubmit = async (data: PatientFormData) => {
     setIsSubmitting(true);
     try {
-      await createPatient(data);
+      // 🔧 FIX: Map form data to API structure
+      const apiData = {
+        name: data.name,
+        idNumber: data.idNumber,
+        email: data.email,
+        phone: data.phone,
+        employerName: data.employer,
+        employer: data.employer,
+        examinationType: data.examinationType
+      };
+      
+      console.log('📤 REGISTRATION DEBUG: Submitting patient data:', apiData);
+      const response = await createPatient(apiData);
+      
+      console.log('✅ REGISTRATION DEBUG: Patient created:', response);
+      
       toast({
         title: "Success",
         description: "Patient registered successfully",
       });
       form.reset();
+      
+      // 🔧 FIX: Navigate to patient-specific questionnaire with patient ID
+      if (response && response.patient && response.patient._id) {
+        console.log('🚀 REGISTRATION DEBUG: Navigating to questionnaire for patient:', response.patient._id);
+        navigate(`/patients/${response.patient._id}/questionnaire`);
+      } else {
+        console.error('❌ REGISTRATION DEBUG: No patient ID in response:', response);
+        // Fallback to generic questionnaire if no patient ID
+        navigate('/questionnaires');
+      }
     } catch (error) {
+      console.error('❌ REGISTRATION ERROR:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to register patient",

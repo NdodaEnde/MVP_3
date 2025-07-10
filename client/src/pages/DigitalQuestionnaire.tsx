@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DigitalQuestionnaireForm } from '@/components/forms/DigitalQuestionnaireForm';
 import { questionnaireService } from '@/services/questionnaireService';
-import { getPatients } from '@/api/patients';
+import { getPatientById } from '@/api/patients';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -51,20 +51,21 @@ export default function DigitalQuestionnairePage() {
       try {
         setLoading(true);
         
-        // Load patient information
-        const patientsResponse = await getPatients();
-        const foundPatient = patientsResponse.patients?.find(p => p._id === patientId);
+        // 🔧 FIX: Load patient by ID directly
+        console.log('🔍 QUESTIONNAIRE DEBUG: Loading patient with ID:', patientId);
+        const patientResponse = await getPatientById(patientId);
         
-        if (!foundPatient) {
+        if (!patientResponse.patient) {
           setError('Patient not found');
           return;
         }
 
-        setPatient(foundPatient);
+        console.log('✅ QUESTIONNAIRE DEBUG: Found patient:', patientResponse.patient.firstName, patientResponse.patient.surname);
+        setPatient(patientResponse.patient);
 
         // Try to load existing questionnaire
-        if (foundPatient.currentExamination) {
-          const existingData = await questionnaireService.loadQuestionnaire(foundPatient.currentExamination);
+        if (patientResponse.patient.currentExamination) {
+          const existingData = await questionnaireService.loadQuestionnaire(patientResponse.patient.currentExamination);
           if (existingData) {
             setExistingQuestionnaire(existingData);
           }
