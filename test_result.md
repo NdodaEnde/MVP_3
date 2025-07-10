@@ -169,7 +169,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete End-to-End Workflow Verification"
+    - "Backend Patient Registration API Testing Complete"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
