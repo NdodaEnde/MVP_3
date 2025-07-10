@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createPatient } from '@/api/patients';
-import { useToast } from '@/hooks/useToast';
+import { validateAndExtractSAID } from '@/utils/sa-id-validation';
 import { UserPlus, Building, Phone, Mail, CreditCard } from 'lucide-react';
 
 const patientSchema = z.object({
