@@ -30,9 +30,18 @@ export function MedicalReview() {
   const [patientVitals, setPatientVitals] = useState<VitalSigns[]>([]);
   const [patientTests, setPatientTests] = useState<TestResults[]>([]);
   const [patientQuestionnaire, setPatientQuestionnaire] = useState<any>(null);
+  const [medicalDecision, setMedicalDecision] = useState<string>('');
+  const [restrictions, setRestrictions] = useState<string>('');
+  const [recommendations, setRecommendations] = useState<string>('');
+  const [fitnessStatus, setFitnessStatus] = useState<'fit' | 'fit-with-restriction' | 'fit-with-condition' | 'temporary-unfit' | 'unfit'>('fit');
+  const [isGeneratingCertificate, setIsGeneratingCertificate] = useState(false);
+  const [certificateGenerated, setCertificateGenerated] = useState<any>(null);
+  const { toast } = useToast();
+
+  // Risk factors and red flags
+  const [riskFactors, setRiskFactors] = useState<string[]>([]);
   const [redFlags, setRedFlags] = useState<string[]>([]);
   const [riskAssessment, setRiskAssessment] = useState<'low' | 'medium' | 'high'>('low');
-  const { toast } = useToast();
 
   useEffect(() => {
     fetchPatients();
