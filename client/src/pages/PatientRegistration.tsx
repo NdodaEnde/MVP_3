@@ -259,7 +259,12 @@ export function PatientRegistration() {
                               <Input 
                                 placeholder="+27123456789" 
                                 className="pl-10"
-                                {...field} 
+                                {...field}
+                                value={field.value || ''}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  console.log('Phone input changed:', e.target.value);
+                                }}
                               />
                             </div>
                           </FormControl>
