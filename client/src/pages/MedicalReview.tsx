@@ -21,7 +21,11 @@ import {
   Eye,
   Printer,
   Mail,
-  Award
+  Award,
+  Shield,
+  Scale,
+  Ear,
+  XCircle
 } from 'lucide-react';
 
 export function MedicalReview() {
