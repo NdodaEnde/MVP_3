@@ -356,6 +356,11 @@ export function MedicalReview() {
   const handlePatientSelect = (patientId: string) => {
     const patient = patients.find(p => p._id === patientId);
     setSelectedPatient(patient || null);
+    
+    if (patient) {
+      // Fetch patient data when selected
+      fetchPatientData();
+    }
   };
     link.click();
     document.body.removeChild(link);
