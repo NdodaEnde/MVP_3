@@ -52,47 +52,48 @@ export function PatientRegistration() {
   const onSubmit = async (data: PatientFormData) => {
     setIsSubmitting(true);
     try {
-      // 🔧 FIX: Map form data to API structure
-      const apiData = {
+      // Validate SA ID
+      const idValidation = validateSAID(data.idNumber);
+      if (!idValidation.isValid) {
+        toast({
+          title: "Invalid SA ID",
+          description: "Please enter a valid 13-digit SA ID number",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create patient with extended data
+      const patientData = {
         name: data.name,
         idNumber: data.idNumber,
         email: data.email,
         phone: data.phone,
-        employerName: data.employer,
         employer: data.employer,
-        examinationType: data.examinationType
+        examinationType: data.examinationType,
+        age: idValidation.age,
+        dateOfBirth: idValidation.dateOfBirth,
+        gender: idValidation.gender,
       };
+
+      const response = await createPatient(patientData);
       
-      console.log('📤 REGISTRATION DEBUG: Submitting patient data:', apiData);
-      const response = await createPatient(apiData);
-      
-      console.log('✅ REGISTRATION DEBUG: Patient created:', response);
-      
-      toast({
-        title: "Success",
-        description: "Patient registered successfully",
+      // Initialize workflow for the new patient
+      const patientId = response?.patient?._id || `new_${Date.now()}`;
+      initializeWorkflow({
+        patientId,
+        patientName: data.name,
+        examinationType: data.examinationType
       });
-      form.reset();
-      
-      // 🔧 FIX: Navigate to patient-specific questionnaire with patient ID
-      if (response && response.patient && response.patient._id) {
-        console.log('🚀 REGISTRATION DEBUG: Navigating to questionnaire for patient:', response.patient._id);
-        navigate(`/patients/${response.patient._id}/questionnaire`);
-      } else {
-        console.error('❌ REGISTRATION DEBUG: No patient ID in response:', response);
-        // Fallback to generic questionnaire if no patient ID
-        navigate('/questionnaires');
-      }
-    } catch (error) {
-      console.error('❌ REGISTRATION ERROR:', error);
+
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to register patient",
-        variant: "destructive",
+        title: "Patient registered successfully",
+        description: `${data.name} has been registered for ${data.examinationType.replace('-', ' ')} examination`,
       });
-    } finally {
-      setIsSubmitting(false);
-    }
+
+      // Navigate to questionnaire with workflow context
+      const questionnaireRoute = `/patients/${patientId}/questionnaire`;
+      navigate(questionnaireRoute);
   };
 
   const validateSAID = (idNumber: string) => {
