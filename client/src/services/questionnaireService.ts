@@ -466,29 +466,15 @@ class QuestionnaireService {
   }
 
   private validateSAID(idNumber: string): boolean {
-    if (!idNumber || idNumber.length !== 13) return false;
-    
-    // 🔧 FIX: Use the same Luhn algorithm as sa-id-validation.ts
-    const digits = idNumber.split('').map(Number);
-    let sum = 0;
-    
-    // Process first 12 digits
-    for (let i = 0; i < 12; i++) {
-      let digit = digits[i];
-      
-      // Double every second digit from the right (matching sa-id-validation.ts)
-      if ((12 - i) % 2 === 0) {
-        digit *= 2;
-        if (digit > 9) {
-          digit = Math.floor(digit / 10) + (digit % 10);
-        }
-      }
-      
-      sum += digit;
+    // 🔧 FIX: Use the centralized SA ID validation utility instead of duplicate logic
+    try {
+      const { validateAndExtractSAID } = require('../utils/sa-id-validation');
+      const validation = validateAndExtractSAID(idNumber);
+      return validation.isValid;
+    } catch (error) {
+      console.error('SA ID validation error:', error);
+      return false;
     }
-    
-    const checksum = (10 - (sum % 10)) % 10;
-    return checksum === digits[12];
   }
 
   // Auto-save functionality
