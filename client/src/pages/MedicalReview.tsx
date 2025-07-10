@@ -345,14 +345,6 @@ export function MedicalReview() {
     }
   };
 
-  const downloadCertificatePDF = (pdfBuffer: Buffer, patientName: string) => {
-    const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Certificate_of_Fitness_${patientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
-    document.body.appendChild(link);
-
   const handlePatientSelect = (patientId: string) => {
     const patient = patients.find(p => p._id === patientId);
     setSelectedPatient(patient || null);
@@ -362,6 +354,14 @@ export function MedicalReview() {
       fetchPatientData();
     }
   };
+
+  const downloadCertificatePDF = (pdfBuffer: Buffer, patientName: string) => {
+    const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Certificate_of_Fitness_${patientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+    document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
