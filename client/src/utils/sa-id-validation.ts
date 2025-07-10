@@ -23,30 +23,39 @@ export function validateSAIDFormat(idNumber: string): boolean {
 }
 
 /**
- * Validates SA ID number using Luhn algorithm checksum
+ * Validates SA ID number using the correct South African checksum algorithm
+ * Reference: Official SA Department of Home Affairs algorithm
  */
 export function validateLuhnChecksum(idNumber: string): boolean {
   const digits = idNumber.split('').map(Number);
-  let sum = 0;
   
-  // Process first 12 digits
-  for (let i = 0; i < 12; i++) {
-    let digit = digits[i];
-    
-    // Double every second digit from the right
-    if ((12 - i) % 2 === 0) {
-      digit *= 2;
-      if (digit > 9) {
-        digit = Math.floor(digit / 10) + (digit % 10);
-      }
-    }
-    
-    sum += digit;
+  // Step 1: Sum of odd-positioned digits (1st, 3rd, 5th, 7th, 9th, 11th)
+  let oddSum = 0;
+  for (let i = 0; i < 12; i += 2) {
+    oddSum += digits[i];
   }
   
-  // Calculate checksum
-  const checksum = (10 - (sum % 10)) % 10;
-  return checksum === digits[12];
+  // Step 2: Even-positioned digits concatenated and multiplied by 2
+  let evenDigitsStr = '';
+  for (let i = 1; i < 12; i += 2) {
+    evenDigitsStr += digits[i];
+  }
+  const evenNumber = parseInt(evenDigitsStr) * 2;
+  
+  // Step 3: Sum of digits in the resulting even number
+  let evenSum = 0;
+  const evenNumberStr = evenNumber.toString();
+  for (let digit of evenNumberStr) {
+    evenSum += parseInt(digit);
+  }
+  
+  // Step 4: Total sum
+  const totalSum = oddSum + evenSum;
+  
+  // Step 5: Calculate checksum
+  const checksumCalculated = (10 - (totalSum % 10)) % 10;
+  
+  return checksumCalculated === digits[12];
 }
 
 /**
