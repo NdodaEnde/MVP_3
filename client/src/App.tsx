@@ -80,6 +80,7 @@ function App() {
             <Route path="questionnaires/mobile" element={<MobileQuestionnaire />} />
             <Route path="patients/:patientId/questionnaire" element={<DigitalQuestionnaire />} />
             <Route path="questionnaire-complete" element={<QuestionnaireCompletePage />} />
+            <Route path="sa-id-test" element={<SAIDValidationTest />} />
             <Route path="workflow" element={<StationWorkflowIntegration />} />
             <Route path="tests" element={<MedicalTests />} />
             <Route path="review" element={<MedicalReview />} />
