@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { validateAndExtractSAID } from '../utils/sa-id-validation';
+import { validateAndExtractSAID } from '@/utils/sa-id-validation';
 
 export function SAIDValidationTest() {
   const [idNumber, setIdNumber] = useState('');
