@@ -6,10 +6,20 @@ export function SAIDValidationTest() {
   const [validationResult, setValidationResult] = useState<any>(null);
 
   const testValidation = () => {
-    console.log('Testing SA ID:', idNumber);
-    const result = validateAndExtractSAID(idNumber);
-    console.log('Validation result:', result);
-    setValidationResult(result);
+    console.log('🔧 SA ID Test - Button clicked');
+    console.log('🔧 SA ID Test - Testing SA ID:', idNumber);
+    
+    try {
+      const result = validateAndExtractSAID(idNumber);
+      console.log('🔧 SA ID Test - Validation result:', result);
+      setValidationResult(result);
+    } catch (error) {
+      console.error('🔧 SA ID Test - Validation error:', error);
+      setValidationResult({ 
+        isValid: false, 
+        errors: ['Validation function error: ' + error.message] 
+      });
+    }
   };
 
   return (
