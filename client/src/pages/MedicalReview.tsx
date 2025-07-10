@@ -277,7 +277,78 @@ export function MedicalReview() {
     setRiskAssessment(risk);
   };
 
-  const handlePatientSelect = (patientId: string) => {
+  // Certificate generation
+  const generateCertificate = async () => {
+    if (!selectedPatient) {
+      toast({
+        title: "Error",
+        description: "Please select a patient first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingCertificate(true);
+    
+    try {
+      const certificateService = new CertificateService();
+      
+      const options: CertificateGenerationOptions = {
+        patientId: selectedPatient._id,
+        doctorName: "Dr. M Mphuthi",
+        nurseName: "Sr. Sibongile Mahlangu", 
+        practiceNumber: "0404160",
+        overrideDecision: {
+          fitnessStatus,
+          restrictions: restrictions.split(',').map(r => r.trim()).filter(r => r),
+          comments: recommendations
+        }
+      };
+      
+      const result = await certificateService.generateCertificateForPatient(options);
+      
+      if (result.success) {
+        setCertificateGenerated(result);
+        
+        toast({
+          title: "Certificate Generated Successfully",
+          description: `Certificate of Fitness created for ${selectedPatient.name}`,
+        });
+        
+        // Auto-download the PDF
+        if (result.pdfBuffer) {
+          downloadCertificatePDF(result.pdfBuffer, selectedPatient.name);
+        }
+      } else {
+        toast({
+          title: "Certificate Generation Failed",
+          description: result.errors?.join(', ') || "Unknown error occurred",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Certificate generation error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate certificate",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingCertificate(false);
+    }
+  };
+
+  const downloadCertificatePDF = (pdfBuffer: Buffer, patientName: string) => {
+    const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Certificate_of_Fitness_${patientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
     const patient = patients.find(p => p._id === patientId);
     setSelectedPatient(patient || null);
   };
