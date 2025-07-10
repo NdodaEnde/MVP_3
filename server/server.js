@@ -46,6 +46,21 @@ app.on("error", (error) => {
   console.error(error.stack);
 });
 
+// Health check endpoint (must be before 404 handler)
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    features: {
+      enhancedValidation: true,
+      notificationService: true,
+      performanceOptimization: true
+    }
+  });
+});
+
 // Basic Routes
 app.use(basicRoutes);
 // Authentication Routes
@@ -60,21 +75,6 @@ app.use('/api/nl-query', require('./routes/nlQueryRoutes'));
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {
   res.status(404).send("Page not found.");
-});
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    features: {
-      enhancedValidation: true,
-      notificationService: true,
-      performanceOptimization: true
-    }
-  });
 });
 
 // Error handling
