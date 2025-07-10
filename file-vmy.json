@@ -1,0 +1,317 @@
+{
+  "extraction": {
+    "document_type": "Multi-document Extraction (Medical Surveillance, Certificates, Audiometry, Spirometry, Vision, Consent, Questionnaire, Continuation)",
+    "extracted_data": {
+      "Certificate_of_Fitness": [
+        {
+          "employee_name": "LS. MOKGATHE",
+          "employee_id": "7406046297083",
+          "company_name": "RSC GROUP",
+          "date_of_examination": "2024-06-19",
+          "expiry_date": "2025-06-19",
+          "job_title": "STOREMAN",
+          "examination_type": "PRE-EMPLOYMENT",
+          "fit_status": "FIT",
+          "fit_with_restriction": false,
+          "fit_with_condition": false,
+          "temporary_unfit": false,
+          "unfit": false,
+          "comments": "N/A",
+          "practitioner_name": "Dr. MJ Mphuthi",
+          "practitioner_practice_no": "0404160",
+          "nurse_name": "Sr. Sibongile Mahlangu",
+          "nurse_practice_no": "999 088 0000 8177 91"
+        }
+      ],
+      "Audiometric_Test_Results": [
+        {
+          "name": "L. S Mokgatlhe",
+          "id_number": "7406046297083",
+          "company": "RSC GROUP",
+          "occupation": "STOREMAN",
+          "tested_by": "Clinic",
+          "date_of_test": "2025-04-16",
+          "audio_type": "Screening",
+          "noise_exposure": "85 - 104 dB",
+          "age": 50,
+          "time": "14:41",
+          "exposure_date": "2025-04-16",
+          "summary": {
+            "current_plh": 4.3,
+            "previous_plh": 2.9,
+            "curr_prev_diff": 1.4,
+            "baseline_plh": 0,
+            "bl_shift": 0
+          },
+          "otoscopic_report": {
+            "left_ear": "Clear",
+            "right_ear": "Clear",
+            "sts_l": 0,
+            "sts_r": 0,
+            "sts_av": 0,
+            "pass_25db": "Y"
+          },
+          "left_ear_thresholds": [
+            {
+              "L500": 20,
+              "L1000": 10,
+              "L2000": 15,
+              "L3000": 25,
+              "L4000": 30,
+              "L6000": 25,
+              "L8000": 20,
+              "avg": 23.33
+            },
+            {
+              "L500": 30,
+              "L1000": 20,
+              "L2000": 15,
+              "L3000": 20,
+              "L4000": 45,
+              "L6000": 20,
+              "L8000": 65,
+              "sts": 0,
+              "avg": 26.67
+            }
+          ],
+          "right_ear_thresholds": [
+            {
+              "R500": 15,
+              "R1000": 20,
+              "R2000": 20,
+              "R3000": 25,
+              "R4000": 30,
+              "R6000": 30,
+              "R8000": 10,
+              "avg": 25
+            },
+            {
+              "R500": 20,
+              "R1000": 10,
+              "R2000": 25,
+              "R3000": 0,
+              "R4000": 25,
+              "R6000": 35,
+              "R8000": 35,
+              "sts": 0,
+              "avg": 16.67
+            }
+          ]
+        }
+      ],
+      "Spirometry_Report": [
+        {
+          "name": "MOKGATHLE, LS",
+          "id_number": "7406046297083",
+          "date_of_birth": "1974-06-04",
+          "age": 50,
+          "gender": "Male",
+          "occupation": "STOREMAN",
+          "company": "RSC GROUP",
+          "height_cm": 158,
+          "weight_kg": 72,
+          "bmi": 28.84,
+          "ethnic": "African",
+          "smoking": "0 pack yea",
+          "test_date": "2025-04-16",
+          "test_time": "14:35:50",
+          "operator": "sibonelo mzila",
+          "environment": "759 mmHg, 20 C (68 F)",
+          "test_position": "standing",
+          "spirometry_results": {
+            "FVC_best_pre": 3.12,
+            "FEV1_best_pre": 3,
+            "FEV1%_best_pre": 85.44,
+            "PEFR_best_pre": 7.44,
+            "FVC_pred": 3.23,
+            "FEV1_pred": 2.57,
+            "FEV1%_pred": 70.39,
+            "PEFR_pred": 6.93,
+            "FVC_best_post": null,
+            "FEV1_best_post": null,
+            "FEV1%_best_post": null,
+            "PEFR_best_post": null
+          },
+          "interpretation": "Spirometry within NORMAL limits: (FVC>=FVCLLN and FEV1%>=FEV1%LLN)",
+          "bronchodilator": "none 0 hours ago"
+        }
+      ],
+      "Vision_Test": [
+        {
+          "name": "Lesley Mokgatlhe",
+          "date": "2025-04-16",
+          "occupation": "Storeman",
+          "age": 60,
+          "wears_glasses": false,
+          "wears_contacts": false,
+          "vision_correction_type": "",
+          "right_eye_acuity": "20/20",
+          "left_eye_acuity": "20/20",
+          "both_eyes_acuity": "20/20",
+          "color_vision_severe": "Three Correct",
+          "color_vision_mild": "Three Correct",
+          "horizontal_field_test": "LEFT SIDE: 85° 70° 55° NASAL; RIGHT SIDE: NASAL 55° 70° 85°",
+          "vertical_field_test": "UPPER: 35° L 35° R; LOWER: 35° L 35° R",
+          "phoria": "ESO 1 2 3 4 5 6 7 8 9 EXO; RIGHT H. 0 1 2 3 1 2 3 8 9 LEFT H.; ORTHO",
+          "stereopsis": "Box 10 %, 59°; Heart 30 %, 29°; Cross 40 %, 74°; Star 75%, 45°; Cross 85%, 32°"
+        }
+      ],
+      "Consent_Form": [
+        {
+          "name": "LESLEY MOKGATHE",
+          "id_number": "7406046297083",
+          "medication_disclosed": "NONE",
+          "urine_is_own": "Y",
+          "test_device_sealed": "Y",
+          "test_device_expiry_valid": "Y",
+          "test_device_expiry_date": "2024-02-27",
+          "illicit_drugs_taken": "N",
+          "test_conducted_in_presence": "Y",
+          "test_result": "NEGATIVE",
+          "employee_signature": "signed",
+          "ohp_signature": "signed",
+          "date": "2024-01-19"
+        }
+      ],
+      "Medical_Questionnaire": [
+        {
+          "initials": "LSM",
+          "surname": "McHugh",
+          "id_number": "74660642978083",
+          "date_of_birth": "2014-07-01",
+          "position": "STOREMAN",
+          "marital_status": "Single",
+          "department": "FAMILY MEDICINE",
+          "pre_employment": true,
+          "baseline": true,
+          "transfer": false,
+          "periodical": false,
+          "exit": false,
+          "other_specify": false,
+          "weight_kg": 0.9,
+          "height_cm": 156,
+          "bp_systolic": 120,
+          "bp_diastolic": 81,
+          "pulse_rate": 73,
+          "urine_glucose": "No",
+          "urine_protein": "No",
+          "urine_blood": "No"
+        }
+      ],
+      "Working_at_Heights_Questionnaire": [
+        {
+          "main_complaints": [
+            {
+              "question": "Have you ever been advised NOT to work at height?",
+              "answer": "No"
+            },
+            {
+              "question": "Have you ever had a serious occupational accident or occupational diseases?",
+              "answer": "No"
+            },
+            {
+              "question": "Do you have a fear of heights or fear of enclosed spaces?",
+              "answer": "No"
+            },
+            {
+              "question": "Do you have, or have you ever had fits/seizures, epilepsy, blackouts, dizzy spells, or episodes of sudden weakness?",
+              "answer": "No"
+            },
+            {
+              "question": "Have you ever attempted to commit suicide or have suicidal thoughts?",
+              "answer": "No"
+            },
+            {
+              "question": "Have you ever seen a psychologist, psychiatrist or any other health professional for a mental health disease?",
+              "answer": "No"
+            },
+            {
+              "question": "Do you often have thoughts that are not own e.g. message from God, the devil or evil spirits?",
+              "answer": "No"
+            },
+            {
+              "question": "Do you have a substance abuse problem(alcohol/drugs)",
+              "answer": "No"
+            },
+            {
+              "question": "Are you aware of any other problems that could possibly affect your ability to safely perform duties and work at heights?",
+              "answer": "No"
+            },
+            {
+              "question": "Have you been informed of the tasks you are expected to perform, and the safety requirements and health requirements for working at heights?",
+              "answer": "No"
+            },
+            {
+              "question": "Do you have any chronic diseases e.g. diabetes or epilepsy",
+              "answer": "No"
+            }
+          ],
+          "additional_comments": ""
+        }
+      ],
+      "Continuation_Form": [
+        {
+          "patient_name": "Lesley Mokgatlhe",
+          "entries": [
+            {
+              "date_time": "2025-04-16",
+              "remarks": "Annual medical examination done. Known hypertensive pt, initiated on Rx 2024.",
+              "signature_qualification": ""
+            }
+          ]
+        },
+        {
+          "patient_name": "Lesley Mokgatlhe.",
+          "entries": [
+            {
+              "date_time": "16.04.25",
+              "remarks": "Annual medical examination done. Known hypertensive pt, initiated on Rx 2024.",
+              "signature_qualification": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "document_type": {
+      "chunk_references": [
+        "8a295e3f-bad1-47bc-9e9a-e9de7c8f3d7d",
+        "ef1bbe6b-bf6e-4225-a8d0-da457c7bb52b",
+        "ca2c50e3-fb08-4037-95c5-e2962f627360",
+        "81a083b4-20ed-48ec-9085-5f68a88dea6e",
+        "fd8593eb-1af0-4b33-a9ff-acc684669184",
+        "b2e43998-b01b-412c-b9f5-2855992d6b32",
+        "3db708c8-f21d-441b-aa3a-ac3bcb910701",
+        "b9a1fd3a-a028-488c-b54f-0462d6a1031c",
+        "1291546c-aae7-49f0-803f-d79159fdeed0",
+        "8188299c-b328-424b-a927-4b9ba6a69735",
+        "72b16d7b-1d3f-47cf-8832-cf33081cc5c5",
+        "7496ce67-bed1-476e-8c5c-a922664ee4d6",
+        "0f52ea22-7d5f-40c8-917a-8143b1cd0275",
+        "ee1d5475-2e1c-480e-892b-45774f06e53b",
+        "17a9b8dc-6a92-4e88-bd7d-8a16aaf2e8dd",
+        "6a50e015-bb99-4672-ae6b-aa527678c994",
+        "9736e9b8-1236-452c-a203-db774ab42e65",
+        "53942006-d0ea-442f-b0f8-0dc046f390c2",
+        "c7731df6-c0ac-430a-ad3f-52758d409389",
+        "4bca0531-6e73-44c4-b180-d3d9f6404113",
+        "c0ad778b-506e-4953-9e39-46400e2bd95a",
+        "cff1d9a5-e1cb-4e1c-aabb-6061d46ad72a",
+        "c9075b56-47c8-430b-bda7-5ec973b18b98",
+        "8acd1834-d1a4-4dee-93a1-a040dd948870",
+        "7d6216b6-8752-41df-9929-1d31545c6a3a",
+        "96d91ea0-466b-413f-9bc4-8bffc9dd4280",
+        "8d31c6aa-f220-4125-8ab3-b810588a3f15",
+        "5371c3b5-8f4e-4510-83f8-84dcd3cc2fb4",
+        "82c9ab33-8dd3-438e-9d37-764f6523a6b7",
+        "627e0f5a-472b-43cc-b7ee-c8f334768458",
+        "afa8ab17-7d3f-40c6-8d99-8bd85155fdd4",
+        "d02a30a1-5c1a-4c00-ac5b-4a74fe2033cc",
+        "f52c33dd-348b-4123-a969-6773490cb5ec",
+        "4a98c6dc-51f7-4277-9e1d-0165935acb12"
+      ]
+    },
+    "extracted_data": {}
+  }
+}
