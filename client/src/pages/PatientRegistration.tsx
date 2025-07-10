@@ -95,6 +95,17 @@ export function PatientRegistration() {
       // Navigate to questionnaire with workflow context
       const questionnaireRoute = `/patients/${patientId}/questionnaire`;
       navigate(questionnaireRoute);
+      
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration failed",
+        description: "There was an error registering the patient. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const validateSAID = (idNumber: string) => {
