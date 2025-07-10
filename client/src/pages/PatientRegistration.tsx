@@ -287,7 +287,12 @@ export function PatientRegistration() {
                               <Input 
                                 placeholder="ABC Mining Corp" 
                                 className="pl-10"
-                                {...field} 
+                                {...field}
+                                value={field.value || ''}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  console.log('Employer input changed:', e.target.value);
+                                }}
                               />
                             </div>
                           </FormControl>
