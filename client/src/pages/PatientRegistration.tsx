@@ -275,8 +275,9 @@ export function PatientRegistration() {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 relative z-50"
                     disabled={isSubmitting}
+                    style={{ pointerEvents: 'auto', position: 'relative', zIndex: 9999 }}
                   >
                     {isSubmitting ? 'Registering...' : 'Register Patient'}
                   </Button>
