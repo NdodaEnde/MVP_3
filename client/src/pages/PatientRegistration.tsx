@@ -36,6 +36,7 @@ export function PatientRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { initializeWorkflow } = usePatientWorkflow();
 
   const form = useForm<PatientFormData>({
     resolver: zodResolver(patientSchema),
