@@ -307,7 +307,13 @@ export function PatientRegistration() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Examination Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              console.log('Examination type changed:', value);
+                            }}
+                            value={field.value || 'pre-employment'}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select examination type" />
