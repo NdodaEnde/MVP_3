@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SA ID Validation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .valid { background-color: #d4edda; border-color: #c3e6cb; }
+        .invalid { background-color: #f8d7da; border-color: #f5c6cb; }
+        input { padding: 10px; font-size: 16px; width: 200px; margin: 10px; }
+        button { padding: 10px 20px; font-size: 16px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>South African ID Number Validation Test</h1>
+        <p>This tool tests the corrected SA ID validation algorithm.</p>
+        
+        <div class="test-section">
+            <h3>Test SA ID Validation</h3>
+            <input type="text" id="saIdInput" placeholder="Enter 13-digit SA ID" maxlength="13">
+            <button onclick="validateSAID()">Validate</button>
+            <div id="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Pre-defined Test Cases</h3>
+            <div id="testCases"></div>
+        </div>
+    </div>
+
+    <script>
+        // Corrected South African ID validation algorithm
+        function validateSAIDCorrect(idNumber) {
+            if (!idNumber || idNumber.length !== 13 || !/^\d+$/.test(idNumber)) {
+                return { isValid: false, error: 'ID must be 13 digits' };
+            }
+            
+            const digits = idNumber.split('').map(Number);
+            
+            // Step 1: Sum of odd-positioned digits (1st, 3rd, 5th, 7th, 9th, 11th)
+            let oddSum = 0;
+            for (let i = 0; i < 12; i += 2) {
+                oddSum += digits[i];
+            }
+            
+            // Step 2: Even-positioned digits concatenated and multiplied by 2
+            let evenDigitsStr = '';
+            for (let i = 1; i < 12; i += 2) {
+                evenDigitsStr += digits[i];
+            }
+            const evenNumber = parseInt(evenDigitsStr) * 2;
+            
+            // Step 3: Sum of digits in the resulting even number
+            let evenSum = 0;
+            const evenNumberStr = evenNumber.toString();
+            for (let digit of evenNumberStr) {
+                evenSum += parseInt(digit);
+            }
+            
+            // Step 4: Total sum
+            const totalSum = oddSum + evenSum;
+            
+            // Step 5: Calculate checksum
+            const checksumCalculated = (10 - (totalSum % 10)) % 10;
+            
+            const isValid = checksumCalculated === digits[12];
+            
+            // Extract demographic data if valid
+            let data = null;
+            if (isValid) {
+                const year = parseInt(idNumber.substring(0, 2));
+                const month = parseInt(idNumber.substring(2, 4));
+                const day = parseInt(idNumber.substring(4, 6));
+                const genderDigit = parseInt(idNumber.substring(6, 10));
+                const citizenship = idNumber.substring(10, 11);
+                
+                const fullYear = year < 50 ? 2000 + year : 1900 + year;
+                const age = new Date().getFullYear() - fullYear;
+                const gender = genderDigit >= 5000 ? 'Male' : 'Female';
+                const citizenshipText = citizenship === '0' ? 'SA Citizen' : 'Permanent Resident';
+                
+                data = {
+                    dateOfBirth: `${fullYear}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
+                    age: age,
+                    gender: gender,
+                    citizenship: citizenshipText
+                };
+            }
+            
+            return { 
+                isValid, 
+                data,
+                calculatedChecksum: checksumCalculated,
+                actualChecksum: digits[12]
+            };
+        }
+        
+        function validateSAID() {
+            const input = document.getElementById('saIdInput').value;
+            const result = validateSAIDCorrect(input);
+            const resultDiv = document.getElementById('result');
+            
+            if (result.isValid) {
+                resultDiv.innerHTML = `
+                    <div class="result valid">
+                        <h4>✅ VALID SA ID</h4>
+                        <p><strong>Date of Birth:</strong> ${result.data.dateOfBirth}</p>
+                        <p><strong>Age:</strong> ${result.data.age}</p>
+                        <p><strong>Gender:</strong> ${result.data.gender}</p>
+                        <p><strong>Citizenship:</strong> ${result.data.citizenship}</p>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result invalid">
+                        <h4>❌ INVALID SA ID</h4>
+                        <p><strong>Error:</strong> ${result.error || 'Invalid checksum'}</p>
+                        ${result.calculatedChecksum !== undefined ? 
+                            `<p><strong>Calculated checksum:</strong> ${result.calculatedChecksum}</p>
+                             <p><strong>Actual checksum:</strong> ${result.actualChecksum}</p>` : ''}
+                    </div>
+                `;
+            }
+        }
+        
+        // Test cases
+        const testCases = [
+            { id: '7807215422081', description: "User's SA ID (should be VALID)" },
+            { id: '7807215422086', description: "Previously 'corrected' ID (should be INVALID)" },
+            { id: '8903030050109', description: "Questionnaire default ID" },
+            { id: '8001014800086', description: "Common test pattern" },
+            { id: '9001010001234', description: "Another test pattern" }
+        ];
+        
+        function runTestCases() {
+            const testCasesDiv = document.getElementById('testCases');
+            let html = '';
+            
+            testCases.forEach(testCase => {
+                const result = validateSAIDCorrect(testCase.id);
+                const statusClass = result.isValid ? 'valid' : 'invalid';
+                const statusIcon = result.isValid ? '✅' : '❌';
+                
+                html += `
+                    <div class="result ${statusClass}">
+                        <strong>${statusIcon} ${testCase.id}</strong> - ${testCase.description}
+                        ${result.isValid && result.data ? 
+                            `<br><small>Born: ${result.data.dateOfBirth}, Age: ${result.data.age}, ${result.data.gender}</small>` : ''}
+                    </div>
+                `;
+            });
+            
+            testCasesDiv.innerHTML = html;
+        }
+        
+        // Run test cases on page load
+        runTestCases();
+    </script>
+</body>
+</html>
