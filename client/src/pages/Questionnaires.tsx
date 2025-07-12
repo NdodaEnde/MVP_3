@@ -36,8 +36,9 @@ import {
 } from 'lucide-react';
 
 // Import enhanced components
-import { EnhancedMedicalHistorySection } from '@/components/EnhancedMedicalHistorySection';
+import { ComprehensiveMedicalHistory } from '@/components/ComprehensiveMedicalHistory';
 import { WorkingQuestionnaireDeclaration } from '@/components/WorkingQuestionnaireDeclaration';
+import { WorkingAtHeightsSection } from '@/components/WorkingAtHeightsSection';
 
 const questionnaireSchema = z.object({
   patientId: z.string().min(1, 'Patient selection is required'),
@@ -55,16 +56,24 @@ const questionnaireSchema = z.object({
     examinationType: z.string().min(1, 'Examination type is required')
   }),
   medicalHistory: z.record(z.union([z.boolean(), z.string()])),
-  occupationalHistory: z.object({
-    asbestosExposure: z.boolean(),
-    mineWork: z.boolean(),
-    chemicalExposure: z.boolean(),
-    noiseExposure: z.boolean(),
-    heatExposure: z.boolean()
-  }),
-  fitnessStatus: z.object({
-    competitiveSport: z.boolean(),
-    regularExercise: z.boolean()
+  workingAtHeights: z.object({
+    safety_questions: z.object({
+      advised_not_work_at_height: z.boolean(),
+      serious_occupational_accident: z.boolean(),
+      fear_of_heights_enclosed_spaces: z.boolean(),
+      fits_seizures_epilepsy_blackouts: z.boolean(),
+      suicide_thoughts_attempts: z.boolean(),
+      seen_mental_health_professional: z.boolean(),
+      thoughts_not_own_messages_spirits: z.boolean(),
+      substance_abuse_problem: z.boolean(),
+      other_problems_affecting_safety: z.boolean()
+    }),
+    training_awareness: z.object({
+      informed_of_tasks_safety_requirements: z.boolean(),
+      chronic_diseases_diabetes_epilepsy: z.boolean()
+    }),
+    additional_comments: z.string().optional(),
+    examiner_notes: z.string().optional()
   }),
   declaration: z.object({
     information_correct: z.boolean(),
@@ -107,16 +116,24 @@ export function Questionnaires() {
         examinationType: ''
       },
       medicalHistory: {},
-      occupationalHistory: {
-        asbestosExposure: false,
-        mineWork: false,
-        chemicalExposure: false,
-        noiseExposure: false,
-        heatExposure: false
-      },
-      fitnessStatus: {
-        competitiveSport: false,
-        regularExercise: false
+      workingAtHeights: {
+        safety_questions: {
+          advised_not_work_at_height: false,
+          serious_occupational_accident: false,
+          fear_of_heights_enclosed_spaces: false,
+          fits_seizures_epilepsy_blackouts: false,
+          suicide_thoughts_attempts: false,
+          seen_mental_health_professional: false,
+          thoughts_not_own_messages_spirits: false,
+          substance_abuse_problem: false,
+          other_problems_affecting_safety: false
+        },
+        training_awareness: {
+          informed_of_tasks_safety_requirements: false,
+          chronic_diseases_diabetes_epilepsy: false
+        },
+        additional_comments: '',
+        examiner_notes: ''
       },
       declaration: {
         information_correct: false,
@@ -147,7 +164,7 @@ export function Questionnaires() {
   // Calculate completion progress
   useEffect(() => {
     const values = form.getValues();
-    const totalFields = 25; // Approximate number of required fields
+    const totalFields = 24; // Approximate number of required fields (updated for Working at Heights)
     let completedFields = 0;
 
     // Count completed personal history fields
@@ -159,8 +176,7 @@ export function Questionnaires() {
     Object.keys(values.medicalHistory).forEach(() => completedFields++);
 
     // Count other sections
-    if (values.occupationalHistory) completedFields += 2;
-    if (values.fitnessStatus) completedFields += 1;
+    if (values.workingAtHeights) completedFields += 3;
     if (values.declaration.signed) completedFields += 2;
 
     setCompletionProgress(Math.min((completedFields / totalFields) * 100, 100));
@@ -371,7 +387,7 @@ export function Questionnaires() {
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-5">
+                    <TabsList className="grid w-full grid-cols-4">
                       <TabsTrigger value="personal" className="flex items-center gap-2">
                         <User className="h-4 w-4" />
                         Personal
@@ -380,13 +396,9 @@ export function Questionnaires() {
                         <Heart className="h-4 w-4" />
                         Medical
                       </TabsTrigger>
-                      <TabsTrigger value="occupational" className="flex items-center gap-2">
-                        <Briefcase className="h-4 w-4" />
-                        Occupational
-                      </TabsTrigger>
-                      <TabsTrigger value="fitness" className="flex items-center gap-2">
-                        <Activity className="h-4 w-4" />
-                        Fitness
+                      <TabsTrigger value="working_at_heights" className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Working at Heights
                       </TabsTrigger>
                       <TabsTrigger value="declaration" className="flex items-center gap-2">
                         <PenTool className="h-4 w-4" />
@@ -533,137 +545,12 @@ export function Questionnaires() {
 
                     {/* Medical History - Enhanced */}
                     <TabsContent value="medical" className="space-y-4">
-                      <EnhancedMedicalHistorySection form={form} />
+                      <ComprehensiveMedicalHistory form={form} />
                     </TabsContent>
 
-                    {/* Occupational History */}
-                    <TabsContent value="occupational" className="space-y-4">
-                      <div className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="occupationalHistory.asbestosExposure"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="text-sm font-normal">
-                                  Previous asbestos exposure
-                                </FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="occupationalHistory.mineWork"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="text-sm font-normal">
-                                  Previous mine work experience
-                                </FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="occupationalHistory.chemicalExposure"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="text-sm font-normal">
-                                  Chemical exposure in workplace
-                                </FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="occupationalHistory.noiseExposure"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="text-sm font-normal">
-                                  Excessive noise exposure
-                                </FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </TabsContent>
-
-                    {/* Fitness Status */}
-                    <TabsContent value="fitness" className="space-y-4">
-                      <div className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="fitnessStatus.competitiveSport"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="text-sm font-normal">
-                                  Participate in competitive sports
-                                </FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="fitnessStatus.regularExercise"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="text-sm font-normal">
-                                  Regular exercise routine
-                                </FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                    {/* Working at Heights Assessment */}
+                    <TabsContent value="working_at_heights" className="space-y-4">
+                      <WorkingAtHeightsSection form={form} />
                     </TabsContent>
 
                     {/* Declaration - Enhanced */}
