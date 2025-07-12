@@ -69,6 +69,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 // Questionnaire Routes
 app.use('/api/questionnaires', questionnaireRoutes);
+// Workflow Routes (Phase 2 Integration)
+app.use('/api/workflow', require('./routes/workflowRoutes'));
 // Natural Language Query Routes
 app.use('/api/nl-query', require('./routes/nlQueryRoutes'));
 

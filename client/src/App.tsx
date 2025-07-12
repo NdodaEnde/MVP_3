@@ -3,6 +3,7 @@ import { ThemeProvider } from "./components/ui/theme-provider"
 import { Toaster } from "./components/ui/toaster"
 import { AuthProvider } from "./contexts/AuthContext"
 import { OrganizationProvider } from "./contexts/OrganizationContext"
+import { WorkflowProvider } from "./contexts/WorkflowContext"
 import { Login } from "./pages/Login"
 import { Register } from "./pages/Register"
 // import { ProtectedRoute } from "./components/ProtectedRoute" // COMMENTED OUT FOR DEBUGGING
@@ -18,6 +19,8 @@ import { MedicalTests } from "./pages/MedicalTests"
 import { CertificateManagement } from "./pages/CertificateManagement"
 import { Questionnaires } from "./pages/Questionnaires"
 import { EnhancedQuestionnaires } from "./pages/EnhancedQuestionnaires"
+import { WorkflowCoordinator } from "./pages/WorkflowCoordinator"
+import { WorkflowComplete } from "./pages/WorkflowComplete"
 import { MedicalReview } from "./pages/MedicalReview"
 import { PatientEHR } from "./pages/PatientEHR"
 import { SearchableEHR } from "./pages/SearchableEHR"
@@ -67,7 +70,9 @@ function App() {
           <Route path="/" element={
             <DiagnosticWrapper>
               <OrganizationProvider>
-                <Layout />
+                <WorkflowProvider>
+                  <Layout />
+                </WorkflowProvider>
               </OrganizationProvider>
             </DiagnosticWrapper>
           }>
@@ -79,6 +84,14 @@ function App() {
             <Route path="processing" element={<HistoricalProcessing />} />
             <Route path="questionnaires" element={<EnhancedQuestionnaires />} />
             <Route path="questionnaires/legacy" element={<Questionnaires />} />
+            
+            {/* Workflow Management - Phase 1 + Phase 2 Integration */}
+            <Route path="workflow" element={<WorkflowCoordinator mode="dashboard" />} />
+            <Route path="workflow/reception" element={<WorkflowCoordinator mode="staff" />} />
+            <Route path="workflow/patient/:sessionId" element={<WorkflowCoordinator mode="patient" />} />
+            <Route path="workflow/staff/:sessionId" element={<WorkflowCoordinator mode="staff" />} />
+            <Route path="workflow/dashboard" element={<WorkflowCoordinator mode="dashboard" />} />
+            <Route path="workflow/complete" element={<WorkflowComplete />} />
             <Route path="questionnaires/mobile" element={<MobileQuestionnaire />} />
             <Route path="patients/:patientId/questionnaire" element={<DigitalQuestionnaire />} />
             <Route path="questionnaire-complete" element={<QuestionnaireCompletePage />} />
