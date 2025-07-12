@@ -685,7 +685,7 @@ export function Questionnaires() {
                     <Button
                       type="submit"
                       className="flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
-                      disabled={isSubmitting || !selectedPatient || !form.watch('declaration.signed')}
+                      disabled={isSubmitting || !selectedPatient || !form.watch('declaration.signature')}
                     >
                       {isSubmitting ? 'Submitting...' : 'Complete Questionnaire'}
                     </Button>
