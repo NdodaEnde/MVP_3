@@ -31,7 +31,8 @@ import {
   Pill,
   Info,
   CheckCircle2,
-  XCircle
+  XCircle,
+  FileText
 } from 'lucide-react';
 
 interface WorkingAtHeightsSectionProps {
@@ -47,85 +48,120 @@ export const WorkingAtHeightsSection: React.FC<WorkingAtHeightsSectionProps> = (
   const [riskLevel, setRiskLevel] = useState<'low' | 'medium' | 'high'>('low');
 
   // Watch form values for changes
-  const watchedValues = form.watch('working_at_heights_assessment');
+  const watchedValues = form.watch('workingAtHeights');
 
   useEffect(() => {
     onDataChange?.(watchedValues);
     calculateRiskScore();
   }, [watchedValues, onDataChange]);
 
-  const heightsAssessmentItems = [
+  // Safety Questions based on JSON Schema
+  const safetyQuestions = [
     { 
-      key: 'fear_of_heights', 
-      label: 'Do you have a fear of heights or acrophobia?', 
+      key: 'advised_not_work_at_height', 
+      label: 'Have you ever been advised not to work at height?', 
       critical: true,
-      description: 'Any anxiety or discomfort when working at elevated positions',
+      description: 'Previous medical advice against working at elevated positions',
+      points: 4
+    },
+    { 
+      key: 'serious_occupational_accident', 
+      label: 'Have you ever had a serious occupational accident?', 
+      critical: true,
+      description: 'Any workplace accident resulting in injury or time off work',
       points: 3
     },
     { 
-      key: 'vertigo_dizziness', 
-      label: 'Do you experience vertigo or dizziness?', 
+      key: 'fear_of_heights_enclosed_spaces', 
+      label: 'Do you have a fear of heights or enclosed spaces?', 
       critical: true,
-      description: 'Including balance problems or feeling of spinning',
+      description: 'Phobias that could affect safety when working at height',
+      points: 4
+    },
+    { 
+      key: 'fits_seizures_epilepsy_blackouts', 
+      label: 'Do you suffer from fits, seizures, epilepsy, or blackouts?', 
+      critical: true,
+      description: 'Conditions that could cause loss of consciousness',
+      points: 5
+    },
+    { 
+      key: 'suicide_thoughts_attempts', 
+      label: 'Have you ever had thoughts of suicide or attempted suicide?', 
+      critical: true,
+      description: 'Mental health concerns that require immediate attention',
+      points: 5
+    },
+    { 
+      key: 'seen_mental_health_professional', 
+      label: 'Have you ever seen a mental health professional?', 
+      critical: false,
+      description: 'History of mental health treatment or counseling',
+      points: 2
+    },
+    { 
+      key: 'thoughts_not_own_messages_spirits', 
+      label: 'Do you ever have thoughts that are not your own, messages, or hear spirits?', 
+      critical: true,
+      description: 'Symptoms of psychosis or hallucinatory experiences',
+      points: 4
+    },
+    { 
+      key: 'substance_abuse_problem', 
+      label: 'Do you have a substance abuse problem?', 
+      critical: true,
+      description: 'Alcohol or drug dependency issues',
       points: 3
     },
     { 
-      key: 'balance_problems', 
-      label: 'Do you have any balance or coordination problems?', 
+      key: 'other_problems_affecting_safety', 
+      label: 'Do you have any other problems that may affect your safety?', 
+      critical: false,
+      description: 'Any additional safety concerns not covered above',
+      points: 2
+    }
+  ];
+
+  // Training Awareness Questions
+  const trainingQuestions = [
+    { 
+      key: 'informed_of_tasks_safety_requirements', 
+      label: 'Have you been informed of the tasks and safety requirements?', 
+      critical: false,
+      description: 'Understanding of job responsibilities and safety protocols',
+      points: 0
+    },
+    { 
+      key: 'chronic_diseases_diabetes_epilepsy', 
+      label: 'Do you suffer from chronic diseases such as diabetes or epilepsy?', 
       critical: true,
-      description: 'Difficulty maintaining balance or coordination issues',
+      description: 'Chronic conditions that may affect work performance',
       points: 3
-    },
-    { 
-      key: 'previous_falls', 
-      label: 'Have you had any previous falls from height?', 
-      critical: true,
-      description: 'Any fall from more than 2 meters or resulting in injury',
-      points: 2
-    },
-    { 
-      key: 'medication_affecting_balance', 
-      label: 'Are you taking medication that may affect balance or concentration?', 
-      critical: true,
-      description: 'Including sedatives, blood pressure medication, or psychiatric drugs',
-      points: 2
-    },
-    { 
-      key: 'vision_problems', 
-      label: 'Do you have vision problems that could affect safety?', 
-      critical: false,
-      description: 'Including poor depth perception, color blindness, or uncorrected vision',
-      points: 2
-    },
-    { 
-      key: 'hearing_problems', 
-      label: 'Do you have hearing problems that could affect communication?', 
-      critical: false,
-      description: 'Difficulty hearing safety signals or communication',
-      points: 1
-    },
-    { 
-      key: 'mobility_restrictions', 
-      label: 'Do you have any mobility restrictions or joint problems?', 
-      critical: false,
-      description: 'Including arthritis, back problems, or limited range of motion',
-      points: 2
     }
   ];
 
   const calculateRiskScore = () => {
     let score = 0;
-    heightsAssessmentItems.forEach(item => {
-      if (form.getValues(`working_at_heights_assessment.${item.key}`)) {
+    
+    // Calculate score for safety questions
+    safetyQuestions.forEach(item => {
+      if (form.getValues(`workingAtHeights.safety_questions.${item.key}`)) {
+        score += item.points;
+      }
+    });
+    
+    // Calculate score for training questions
+    trainingQuestions.forEach(item => {
+      if (form.getValues(`workingAtHeights.training_awareness.${item.key}`)) {
         score += item.points;
       }
     });
 
     setRiskScore(score);
     
-    if (score >= 8) {
+    if (score >= 12) {
       setRiskLevel('high');
-    } else if (score >= 4) {
+    } else if (score >= 6) {
       setRiskLevel('medium');
     } else {
       setRiskLevel('low');
@@ -150,13 +186,14 @@ export const WorkingAtHeightsSection: React.FC<WorkingAtHeightsSectionProps> = (
     }
   };
 
-  const renderSafetyAssessmentItems = () => (
+  const renderQuestionSection = (questions: any[], sectionName: string, title: string) => (
     <div className="space-y-4">
-      {heightsAssessmentItems.map((item) => (
+      <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+      {questions.map((item) => (
         <div 
           key={item.key} 
           className={`p-4 rounded-lg border transition-all ${
-            form.watch(`working_at_heights_assessment.${item.key}`)
+            form.watch(`workingAtHeights.${sectionName}.${item.key}`)
               ? item.critical 
                 ? 'border-red-300 bg-red-50' 
                 : 'border-orange-300 bg-orange-50'
@@ -165,7 +202,7 @@ export const WorkingAtHeightsSection: React.FC<WorkingAtHeightsSectionProps> = (
         >
           <FormField
             control={form.control}
-            name={`working_at_heights_assessment.${item.key}`}
+            name={`workingAtHeights.${sectionName}.${item.key}`}
             render={({ field }) => (
               <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                 <FormControl>
@@ -187,34 +224,16 @@ export const WorkingAtHeightsSection: React.FC<WorkingAtHeightsSectionProps> = (
                         Critical
                       </Badge>
                     )}
-                    <Badge variant="outline" size="sm" className="text-xs">
-                      {item.points} {item.points === 1 ? 'point' : 'points'}
-                    </Badge>
+                    {item.points > 0 && (
+                      <Badge variant="outline" size="sm" className="text-xs">
+                        {item.points} {item.points === 1 ? 'point' : 'points'}
+                      </Badge>
+                    )}
                   </div>
                   
                   <p className="text-sm text-gray-600">
                     {item.description}
                   </p>
-
-                  {field.value && (
-                    <FormField
-                      control={form.control}
-                      name={`working_at_heights_assessment.${item.key}_details`}
-                      render={({ field: detailsField }) => (
-                        <FormItem className="mt-2">
-                          <FormControl>
-                            <Textarea
-                              {...detailsField}
-                              placeholder="Please provide additional details..."
-                              rows={2}
-                              className="text-sm"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
 
                   {field.value && item.critical && (
                     <div className="flex items-center gap-2 text-sm text-red-600 bg-red-100 p-2 rounded">
@@ -231,38 +250,32 @@ export const WorkingAtHeightsSection: React.FC<WorkingAtHeightsSectionProps> = (
     </div>
   );
 
-  const renderPhysicalFitnessAssessment = () => (
+  const renderAdditionalComments = () => (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Activity className="h-5 w-5 text-blue-500" />
-          Physical Fitness Assessment
+          <FileText className="h-5 w-5 text-blue-500" />
+          Additional Information
         </CardTitle>
         <CardDescription>
-          Assessment of physical condition for working at heights
+          Please provide any additional relevant information
         </CardDescription>
       </CardHeader>
       
       <CardContent className="space-y-6">
         <FormField
           control={form.control}
-          name="working_at_heights_assessment.physical_fitness_level"
+          name="workingAtHeights.additional_comments"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Overall physical fitness level</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select fitness level" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent - Very active, regular exercise</SelectItem>
-                  <SelectItem value="good">Good - Moderately active, some exercise</SelectItem>
-                  <SelectItem value="fair">Fair - Limited activity, occasional exercise</SelectItem>
-                  <SelectItem value="poor">Poor - Sedentary lifestyle, no regular exercise</SelectItem>
-                </SelectContent>
-              </Select>
+              <FormLabel>Additional Comments</FormLabel>
+              <FormControl>
+                <Textarea
+                  {...field}
+                  placeholder="Any additional information relevant to working at heights assessment..."
+                  rows={4}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -270,15 +283,16 @@ export const WorkingAtHeightsSection: React.FC<WorkingAtHeightsSectionProps> = (
 
         <FormField
           control={form.control}
-          name="working_at_heights_assessment.specific_concerns"
+          name="workingAtHeights.examiner_notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Any specific concerns about working at heights?</FormLabel>
+              <FormLabel>Examiner Notes (For medical staff use)</FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
-                  placeholder="Describe any specific concerns, anxieties, or limitations you have regarding working at heights..."
-                  rows={4}
+                  placeholder="Medical examiner observations and notes..."
+                  rows={3}
+                  className="bg-gray-50"
                 />
               </FormControl>
               <FormMessage />
@@ -383,11 +397,11 @@ export const WorkingAtHeightsSection: React.FC<WorkingAtHeightsSectionProps> = (
         </CardHeader>
         
         <CardContent>
-          {renderSafetyAssessmentItems()}
+          {renderQuestionSection(safetyQuestions, 'safety_questions', 'Safety Questions')}\n          <Separator />\n          {renderQuestionSection(trainingQuestions, 'training_awareness', 'Training and Awareness')}
         </CardContent>
       </Card>
 
-      {renderPhysicalFitnessAssessment()}
+      {renderAdditionalComments()}
       {renderRiskAssessmentSummary()}
 
       <Alert>

@@ -1,18 +1,76 @@
 import { z } from 'zod';
 
+// 🔧 SA ID Validation Helper
+const validateSAID = (id: string): boolean => {
+  if (!/^\d{13}$/.test(id)) return false;
+  
+  // Luhn algorithm validation for SA ID
+  const digits = id.split('').map(Number);
+  const checksum = digits.pop()!;
+  
+  let sum = 0;
+  for (let i = 0; i < digits.length; i++) {
+    let digit = digits[i];
+    if (i % 2 === 1) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+  }
+  
+  return (10 - (sum % 10)) % 10 === checksum;
+};
+
+// 🔧 Extract info from SA ID
+export const extractFromSAID = (id: string) => {
+  if (!validateSAID(id)) return null;
+  
+  const year = parseInt(id.substring(0, 2));
+  const month = parseInt(id.substring(2, 4));
+  const day = parseInt(id.substring(4, 6));
+  const gender = parseInt(id.substring(6, 10)) >= 5000 ? 'male' : 'female';
+  
+  // Determine century
+  const currentYear = new Date().getFullYear();
+  const century = year <= (currentYear % 100) ? 2000 : 1900;
+  const fullYear = century + year;
+  
+  const birthDate = new Date(fullYear, month - 1, day);
+  const age = currentYear - fullYear;
+  
+  return {
+    dateOfBirth: birthDate.toISOString().split('T')[0],
+    age,
+    gender
+  };
+};
+
 // Enhanced Zod Schema for Medical Questionnaires
 export const questionnaireSchema = z.object({
+  // 📊 Metadata for tracking and workflow
   metadata: z.object({
-    questionnaire_id: z.string().min(1, "Questionnaire ID is required"),
+    questionnaire_id: z.string().default(() => `Q_${Date.now()}`),
     company_name: z.string().min(1, "Company name is required"),
     employee_id: z.string().min(1, "Employee ID is required"),
-    examination_type: z.enum(['pre_employment', 'periodic', 'exit', 'return_to_work'], {
+    session_type: z.enum(['self_service', 'staff_assisted']).default('self_service'),
+    start_method: z.enum(['tablet', 'staff_dashboard', 'kiosk']).default('tablet'),
+    completion_path: z.enum(['guided', 'assisted', 'hybrid']).default('guided'),
+    examination_type: z.enum(['pre_employment', 'periodic', 'exit', 'return_to_work', 'working_at_heights'], {
       errorMap: () => ({ message: "Invalid examination type" })
     }),
     examination_date: z.string().min(1, "Examination date is required"),
+    start_time: z.string().default(() => new Date().toISOString()),
+    last_saved: z.string().optional(),
+    completion_time: z.number().optional(), // minutes
+    staff_member_id: z.string().optional(),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
-    version: z.string().optional()
+    version: z.string().optional(),
+    device_info: z.object({
+      type: z.enum(['tablet', 'desktop', 'mobile', 'kiosk']),
+      screen_size: z.string().optional(),
+      user_agent: z.string().optional()
+    }).optional()
   }),
 
   patient_demographics: z.object({
@@ -20,7 +78,11 @@ export const questionnaireSchema = z.object({
       initials: z.string().min(1, "Initials are required"),
       first_names: z.string().min(1, "First names are required"),
       surname: z.string().min(1, "Surname is required"),
-      id_number: z.string().regex(/^\d{13}$/, "SA ID number must be 13 digits"),
+      id_number: z.string()
+        .min(13, 'SA ID must be 13 digits')
+        .max(13, 'SA ID must be 13 digits')
+        .regex(/^\d{13}$/, 'SA ID must contain only numbers')
+        .refine(validateSAID, 'Invalid South African ID number'),
       date_of_birth: z.string().min(1, "Date of birth is required"),
       marital_status: z.enum(['single', 'married', 'divorced', 'widow_widower'], {
         errorMap: () => ({ message: "Invalid marital status" })
@@ -28,246 +90,366 @@ export const questionnaireSchema = z.object({
       gender: z.enum(['male', 'female', 'other'], {
         errorMap: () => ({ message: "Invalid gender" })
       }),
-      age: z.number().min(16, "Age must be at least 16").max(120, "Age must be less than 120"),
-      contact_details: z.object({
-        phone: z.string().optional(),
-        email: z.string().email().optional(),
-        address: z.string().optional(),
-        emergency_contact: z.string().optional()
-      }).optional()
+      age: z.number().min(16, 'Must be at least 16 years old').max(100),
+      home_language: z.string().optional(),
+      contact_number: z.string().optional(),
+      email_address: z.string().email().optional(),
+      home_address: z.object({
+        street: z.string().optional(),
+        suburb: z.string().optional(),
+        city: z.string().optional(),
+        postal_code: z.string().optional(),
+        province: z.string().optional()
+      }).optional(),
+      emergency_contact: z.string().optional()
     }),
     employment_info: z.object({
+      employee_number: z.string().optional(),
       position: z.string().min(1, "Position is required"),
       department: z.string().min(1, "Department is required"),
-      employee_number: z.string().min(1, "Employee number is required"),
       company_name: z.string().min(1, "Company name is required"),
-      employment_type: z.enum(['pre_employment', 'baseline', 'transfer', 'periodical', 'exit', 'other'], {
-        errorMap: () => ({ message: "Invalid employment type" })
-      }),
+      employment_type: z.enum([
+        'pre_employment', 
+        'baseline', 
+        'transfer', 
+        'periodical', 
+        'exit', 
+        'return_to_work',
+        'working_at_heights',
+        'other'
+      ]),
       start_date: z.string().optional(),
-      supervisor: z.string().optional(),
+      supervisor_name: z.string().optional(),
       work_location: z.string().optional()
     })
   }),
 
   medical_history: z.object({
+    // Current Medical Conditions
     current_conditions: z.object({
-      heart_disease_high_bp: z.boolean(),
-      epilepsy_convulsions: z.boolean(),
-      glaucoma_blindness: z.boolean(),
-      diabetes_endocrine: z.boolean(),
-      kidney_disease: z.boolean(),
-      liver_disease: z.boolean(),
-      mental_health_conditions: z.boolean(),
-      neurological_conditions: z.boolean(),
-      blood_disorders: z.boolean(),
-      cancer_tumors: z.boolean(),
-      autoimmune_conditions: z.boolean(),
-      other_conditions: z.string().optional()
+      heart_disease_high_bp: z.boolean().nullable(),
+      epilepsy_convulsions: z.boolean().nullable(),
+      glaucoma_blindness: z.boolean().nullable(),
+      family_mellitus_diabetes: z.boolean().nullable(),
+      family_deaths_before_60: z.boolean().nullable(),
+      bleeding_from_rectum: z.boolean().nullable(),
+      kidney_stones_blood_urine: z.boolean().nullable(),
+      sugar_protein_urine: z.boolean().nullable(),
+      prostate_gynaecological_problems: z.boolean().nullable(),
+      blood_thyroid_disorder: z.boolean().nullable(),
+      malignant_tumours_cancer: z.boolean().nullable()
     }),
+    // Respiratory Conditions
     respiratory_conditions: z.object({
-      tuberculosis_pneumonia: z.boolean(),
-      chest_discomfort_palpitations: z.boolean(),
-      asthma_allergies: z.boolean(),
-      chronic_cough: z.boolean(),
-      breathing_difficulties: z.boolean(),
-      lung_disease: z.boolean(),
-      other_respiratory: z.string().optional()
+      tuberculosis_pneumonia: z.boolean().nullable(),
+      chest_discomfort_palpitations: z.boolean().nullable(),
+      shortness_of_breath: z.boolean().nullable(),
+      chronic_cough: z.boolean().nullable(),
+      asthma: z.boolean().nullable(),
+      smoking_history: z.object({
+        current_smoker: z.boolean().nullable(),
+        cigarettes_per_day: z.number().optional(),
+        years_smoking: z.number().optional(),
+        quit_date: z.string().optional()
+      }).optional()
     }),
+
+    // Previous Medical History
+    previous_medical_history: z.object({
+      previous_operations: z.boolean().nullable(),
+      operation_details: z.string().optional(),
+      hospital_admissions: z.boolean().nullable(),
+      admission_details: z.string().optional(),
+      chronic_medications: z.boolean().nullable(),
+      medication_list: z.string().optional(),
+      allergies: z.boolean().nullable(),
+      allergy_details: z.string().optional()
+    }),
+
+    // Occupational Health History
     occupational_health: z.object({
-      noise_exposure: z.boolean(),
-      heat_exposure: z.boolean(),
-      chemical_exposure: z.boolean(),
-      dust_exposure: z.boolean(),
-      radiation_exposure: z.boolean(),
-      vibration_exposure: z.boolean(),
-      fitness_status: z.enum(['fit', 'unfit', 'fit_with_restrictions'], {
-        errorMap: () => ({ message: "Invalid fitness status" })
-      }),
-      competitive_sport: z.boolean(),
-      regular_exercise: z.boolean(),
-      exercise_frequency: z.string().optional(),
-      previous_occupational_injuries: z.boolean(),
-      injury_details: z.string().optional()
-    }),
-    medication_history: z.object({
-      current_medications: z.array(z.object({
-        name: z.string(),
-        dosage: z.string(),
-        frequency: z.string(),
-        purpose: z.string(),
-        prescribing_doctor: z.string().optional()
-      })),
-      allergies: z.array(z.object({
-        allergen: z.string(),
-        reaction: z.string(),
-        severity: z.enum(['mild', 'moderate', 'severe'])
-      })),
-      previous_reactions: z.string().optional()
-    }),
-    family_history: z.object({
-      hereditary_conditions: z.array(z.string()),
-      cardiovascular_disease: z.boolean(),
-      diabetes: z.boolean(),
-      cancer: z.boolean(),
-      mental_health: z.boolean(),
-      other_significant: z.string().optional()
+      previous_occupational_illness: z.boolean().nullable(),
+      workers_compensation_claims: z.boolean().nullable(),
+      asbestos_exposure: z.boolean().nullable(),
+      chemical_exposure: z.boolean().nullable(),
+      noise_exposure: z.boolean().nullable(),
+      dust_exposure: z.boolean().nullable(),
+      radiation_exposure: z.boolean().nullable(),
+      previous_medical_surveillance: z.boolean().nullable()
     })
   }),
 
-  periodic_health_history: z.object({
-    since_last_examination: z.object({
-      illness_injury_treatment: z.string().optional(),
-      family_history_changes: z.string().optional(),
-      occupational_risk_profile_changes: z.string().optional(),
-      current_medications: z.string().optional(),
-      lifestyle_changes: z.string().optional(),
-      new_symptoms: z.string().optional()
+  // 🏋️ Working at Heights Assessment (conditional)
+  working_at_heights: z.object({
+    safety_questions: z.object({
+      advised_not_work_at_height: z.boolean().nullable(),
+      serious_occupational_accident: z.boolean().nullable(),
+      fear_of_heights_enclosed_spaces: z.boolean().nullable(),
+      fits_seizures_epilepsy_blackouts: z.boolean().nullable(),
+      suicide_thoughts_attempts: z.boolean().nullable(),
+      seen_mental_health_professional: z.boolean().nullable(),
+      thoughts_not_own_messages_spirits: z.boolean().nullable(),
+      substance_abuse_problem: z.boolean().nullable(),
+      other_problems_affecting_safety: z.boolean().nullable()
     }),
-    previous_examination_results: z.object({
-      last_examination_date: z.string().optional(),
-      last_examination_outcome: z.enum(['fit', 'unfit', 'fit_with_restrictions']).optional(),
-      restrictions_previously_imposed: z.string().optional(),
-      follow_up_required: z.boolean().optional()
-    }).optional()
+    training_awareness: z.object({
+      informed_of_tasks_safety_requirements: z.boolean().nullable(),
+      chronic_diseases_diabetes_epilepsy: z.boolean().nullable()
+    }),
+    additional_comments: z.string().max(500).optional(),
+    examiner_notes: z.string().max(500).optional()
   }).optional(),
 
-  working_at_heights_assessment: z.object({
-    fear_of_heights: z.boolean(),
-    vertigo_dizziness: z.boolean(),
-    balance_problems: z.boolean(),
-    previous_falls: z.boolean(),
-    medication_affecting_balance: z.boolean(),
-    vision_problems: z.boolean(),
-    hearing_problems: z.boolean(),
-    mobility_restrictions: z.boolean(),
-    physical_fitness_level: z.enum(['excellent', 'good', 'fair', 'poor']).optional(),
-    specific_concerns: z.string().optional()
+  // 🔄 Periodic Health Assessment (conditional)
+  periodic_health: z.object({
+    health_changes_since_last: z.boolean().nullable(),
+    health_changes_details: z.string().max(500).optional(),
+    new_medications: z.boolean().nullable(),
+    new_medications_details: z.string().max(300).optional(),
+    illness_injury_treatment: z.string().max(500).optional(),
+    time_off_work_medical: z.boolean().nullable(),
+    time_off_details: z.string().max(300).optional(),
+    work_related_symptoms: z.boolean().nullable(),
+    work_symptoms_details: z.string().max(500).optional()
   }).optional(),
 
-  return_to_work_surveillance: z.object({
-    absence_reason: z.string().min(1, "Absence reason is required"),
-    absence_duration: z.string().min(1, "Absence duration is required"),
-    medical_clearance: z.boolean(),
-    restrictions_required: z.boolean(),
-    restriction_details: z.string().optional(),
-    gradual_return_plan: z.string().optional(),
-    follow_up_schedule: z.string().optional(),
+  // 🔙 Return to Work Assessment (conditional)
+  return_to_work: z.object({
+    reason_for_absence: z.string().min(1, 'Reason for absence is required'),
+    absence_start_date: z.string().min(1, 'Start date is required'),
     treating_physician: z.string().optional(),
-    medical_reports_attached: z.boolean().optional()
+    current_treatment: z.string().optional(),
+    functional_limitations: z.boolean().nullable(),
+    limitation_details: z.string().max(500).optional(),
+    medication_affecting_work: z.boolean().nullable(),
+    medication_details: z.string().max(300).optional(),
+    gradual_return_recommended: z.boolean().nullable(),
+    accommodation_required: z.boolean().nullable(),
+    accommodation_details: z.string().max(500).optional()
   }).optional(),
 
-  medical_treatment_history: z.object({
-    last_two_years: z.array(z.object({
-      date: z.string(),
-      practitioner_name: z.string(),
-      medical_specialty: z.string(),
-      diagnosis_reason: z.string(),
-      treatment_outcome: z.string().optional(),
-      ongoing_treatment: z.boolean().optional()
-    })),
-    general_practitioners_ten_years: z.array(z.object({
-      name: z.string(),
-      contact_details: z.string(),
-      period_of_care: z.string().optional()
-    })),
-    hospitalizations: z.array(z.object({
-      date: z.string(),
-      hospital: z.string(),
-      reason: z.string(),
-      duration: z.string(),
-      outcome: z.string().optional()
-    })),
-    surgical_history: z.array(z.object({
-      date: z.string(),
-      procedure: z.string(),
-      surgeon: z.string(),
-      complications: z.string().optional()
-    }))
-  }),
-
-  lifestyle_factors: z.object({
-    smoking_history: z.object({
-      current_smoker: z.boolean(),
-      previous_smoker: z.boolean(),
-      packs_per_day: z.number().optional(),
-      years_smoking: z.number().optional(),
-      quit_date: z.string().optional()
-    }),
-    alcohol_consumption: z.object({
-      frequency: z.enum(['never', 'occasional', 'regular', 'daily']).optional(),
-      units_per_week: z.number().optional(),
-      binge_drinking: z.boolean().optional()
-    }),
-    substance_use: z.object({
-      recreational_drugs: z.boolean(),
-      prescription_drug_misuse: z.boolean(),
-      details: z.string().optional()
-    }),
-    diet_exercise: z.object({
-      diet_quality: z.enum(['excellent', 'good', 'fair', 'poor']).optional(),
-      exercise_frequency: z.enum(['daily', 'weekly', 'monthly', 'rarely', 'never']).optional(),
-      sleep_quality: z.enum(['excellent', 'good', 'fair', 'poor']).optional()
-    })
-  }).optional(),
-
-  declarations_and_signatures: z.object({
-    employee_declaration: z.object({
-      information_correct: z.boolean(),
-      no_misleading_information: z.boolean(),
-      consent_to_medical_examination: z.boolean(),
-      consent_to_information_sharing: z.boolean(),
-      employee_name: z.string().min(1, "Employee name is required"),
-      employee_signature: z.string().min(1, "Employee signature is required"),
-      employee_signature_date: z.string().min(1, "Signature date is required"),
-      witness_name: z.string().optional(),
-      witness_signature: z.string().optional()
-    }),
-    health_practitioner: z.object({
-      practitioner_name: z.string().optional(),
-      practitioner_registration_number: z.string().optional(),
-      practitioner_signature: z.string().optional(),
-      practitioner_date: z.string().optional(),
-      practitioner_comments: z.string().optional(),
-      recommendations: z.string().optional(),
-      follow_up_required: z.boolean().optional(),
-      next_examination_date: z.string().optional()
+  // 📋 Physical Examination Data
+  physical_examination: z.object({
+    height: z.string().optional(),
+    weight: z.string().optional(),
+    bmi: z.number().optional(),
+    pulse_rate: z.string().optional(),
+    bp_systolic: z.string().optional(),
+    bp_diastolic: z.string().optional(),
+    weight_change_reason: z.string().optional(),
+    urinalysis: z.object({
+      blood: z.boolean().nullable(),
+      protein: z.boolean().nullable(),
+      glucose: z.boolean().nullable(),
+      random_glucose: z.string().optional(),
+      random_cholesterol: z.string().optional()
     }).optional()
   }),
 
-  validation_status: z.object({
-    questionnaire_complete: z.boolean(),
-    vitals_validated: z.boolean(),
-    assessment_complete: z.boolean(),
-    ready_for_certificate: z.boolean(),
-    validation_errors: z.array(z.string()),
-    last_validated_by: z.string().optional(),
-    last_validated_at: z.string().optional(),
-    completion_percentage: z.number().min(0).max(100).optional(),
-    missing_sections: z.array(z.string()).optional()
+  // ✍️ Digital Signatures and Declarations
+  declarations: z.object({
+    employee_declaration: z.object({
+      information_correct: z.boolean().refine(val => val === true, 'Must confirm information is correct'),
+      no_misleading_information: z.boolean().refine(val => val === true, 'Must confirm no misleading information'),
+      signature: z.string().min(1, 'Employee signature is required'),
+      date: z.string().min(1, 'Date is required')
+    }),
+    
+    consent_declarations: z.object({
+      medical_examination_consent: z.boolean().refine(val => val === true, 'Medical examination consent required'),
+      information_sharing_consent: z.boolean().refine(val => val === true, 'Information sharing consent required'),
+      occupational_health_program_consent: z.boolean().nullable()
+    }),
+
+    staff_signatures: z.object({
+      nurse_signature: z.string().optional(),
+      nurse_date: z.string().optional(),
+      ohp_signature: z.string().optional(),
+      ohp_date: z.string().optional(),
+      omp_signature: z.string().optional(),
+      omp_date: z.string().optional()
+    }).optional()
   }),
+
+  // 🚨 System Generated Data
+  system_data: z.object({
+    medical_alerts: z.array(z.string()).default([]),
+    validation_warnings: z.array(z.string()).default([]),
+    completion_score: z.number().min(0).max(100).default(0),
+    required_follow_ups: z.array(z.string()).default([]),
+    next_station_recommendations: z.array(z.object({
+      station: z.string(),
+      priority: z.enum(['high', 'medium', 'low']),
+      reason: z.string(),
+      estimated_time: z.string()
+    })).default([]),
+    workflow_status: z.enum(['in_progress', 'completed', 'requires_review']).default('in_progress')
+  }).optional(),
 
   audit_trail: z.object({
     created_by: z.string(),
     created_at: z.string(),
     updated_by: z.string().optional(),
-    updated_at: z.string().optional(),
-    version_history: z.array(z.object({
-      version: z.string(),
-      changes: z.string(),
-      changed_by: z.string(),
-      changed_at: z.string()
-    })),
-    access_log: z.array(z.object({
-      user: z.string(),
-      action: z.string(),
-      timestamp: z.string()
-    }))
+    updated_at: z.string().optional()
   }).optional()
 });
 
-// Type inference from the schema
+// 📊 Form Section Configuration
+export const sectionConfigs = {
+  pre_employment: {
+    required_sections: [
+      'patient_demographics',
+      'medical_history',
+      'physical_examination',
+      'declarations'
+    ],
+    optional_sections: ['working_at_heights'],
+    estimated_time: 15
+  },
+  periodic: {
+    required_sections: [
+      'patient_demographics.personal_info',
+      'periodic_health',
+      'medical_history.current_conditions',
+      'physical_examination',
+      'declarations'
+    ],
+    optional_sections: ['working_at_heights'],
+    estimated_time: 10
+  },
+  working_at_heights: {
+    required_sections: [
+      'patient_demographics',
+      'medical_history',
+      'working_at_heights',
+      'physical_examination',
+      'declarations'
+    ],
+    optional_sections: [],
+    estimated_time: 20
+  },
+  return_to_work: {
+    required_sections: [
+      'patient_demographics.personal_info',
+      'return_to_work',
+      'medical_history.current_conditions',
+      'physical_examination',
+      'declarations'
+    ],
+    optional_sections: [],
+    estimated_time: 12
+  }
+};
+
+// 🔧 Validation Helper Functions
+export const validationHelpers = {
+  calculateCompletionScore: (data: any, examinationType: string): number => {
+    const config = sectionConfigs[examinationType as keyof typeof sectionConfigs];
+    if (!config) return 0;
+
+    let totalFields = 0;
+    let completedFields = 0;
+
+    // Count completion for required sections
+    config.required_sections.forEach(section => {
+      const sectionData = getNestedProperty(data, section);
+      if (sectionData) {
+        const fields = countFields(sectionData);
+        totalFields += fields.total;
+        completedFields += fields.completed;
+      }
+    });
+
+    return totalFields > 0 ? Math.round((completedFields / totalFields) * 100) : 0;
+  },
+
+  generateMedicalAlerts: (data: any): string[] => {
+    const alerts: string[] = [];
+    
+    if (data.medical_history?.current_conditions) {
+      const conditions = data.medical_history.current_conditions;
+      
+      if (conditions.heart_disease_high_bp) alerts.push('Cardiovascular condition requires monitoring');
+      if (conditions.epilepsy_convulsions) alerts.push('Neurological condition - fitness assessment required');
+      if (conditions.glaucoma_blindness) alerts.push('Visual impairment - vision testing priority');
+      // Add more medical alert logic
+    }
+
+    if (data.working_at_heights?.safety_questions) {
+      const safetyQuestions = data.working_at_heights.safety_questions;
+      
+      if (safetyQuestions.fear_of_heights_enclosed_spaces) alerts.push('Fear of heights - height work restrictions may apply');
+      if (safetyQuestions.fits_seizures_epilepsy_blackouts) alerts.push('History of seizures - height work contraindicated');
+      if (safetyQuestions.suicide_thoughts_attempts) alerts.push('Mental health concerns - immediate referral required');
+      if (safetyQuestions.advised_not_work_at_height) alerts.push('Previously advised not to work at heights');
+      if (safetyQuestions.substance_abuse_problem) alerts.push('Substance abuse concerns - assessment required');
+    }
+
+    return alerts;
+  },
+
+  getNextStationRecommendations: (data: any, examinationType: string) => {
+    const recommendations = [];
+    
+    // Base recommendations
+    recommendations.push({
+      station: 'nursing',
+      priority: 'high' as const,
+      reason: 'Vital signs assessment',
+      estimated_time: '10 minutes'
+    });
+
+    // Medical condition based routing
+    if (data.medical_history?.current_conditions?.glaucoma_blindness) {
+      recommendations.unshift({
+        station: 'vision_testing',
+        priority: 'high' as const,
+        reason: 'Vision impairment reported',
+        estimated_time: '15 minutes'
+      });
+    }
+
+    if (data.medical_history?.current_conditions?.heart_disease_high_bp) {
+      recommendations.unshift({
+        station: 'ecg',
+        priority: 'high' as const,
+        reason: 'Cardiovascular condition',
+        estimated_time: '20 minutes'
+      });
+    }
+
+    return recommendations;
+  }
+};
+
+// 🔧 Helper Functions
+function getNestedProperty(obj: any, path: string): any {
+  return path.split('.').reduce((current, key) => current?.[key], obj);
+}
+
+function countFields(obj: any): { total: number; completed: number } {
+  let total = 0;
+  let completed = 0;
+
+  Object.values(obj || {}).forEach(value => {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      const nested = countFields(value);
+      total += nested.total;
+      completed += nested.completed;
+    } else {
+      total++;
+      if (value !== null && value !== undefined && value !== '') {
+        completed++;
+      }
+    }
+  });
+
+  return { total, completed };
+}
+
+export type QuestionnaireFormData = z.infer<typeof questionnaireSchema>;
 export type Questionnaire = z.infer<typeof questionnaireSchema>;
+export default questionnaireSchema;
 
 // Partial schema for form validation during input
 export const partialQuestionnaireSchema = questionnaireSchema.partial();
@@ -282,28 +464,24 @@ export const medicalHistorySchema = questionnaireSchema.pick({
   medical_history: true
 });
 
-export const periodicHealthSchema = questionnaireSchema.pick({
-  periodic_health_history: true
+export const workingAtHeightsSchema = questionnaireSchema.pick({
+  working_at_heights: true
 });
 
-export const heightsAssessmentSchema = questionnaireSchema.pick({
-  working_at_heights_assessment: true
+export const periodicHealthSchema = questionnaireSchema.pick({
+  periodic_health: true
 });
 
 export const returnToWorkSchema = questionnaireSchema.pick({
-  return_to_work_surveillance: true
+  return_to_work: true
 });
 
-export const treatmentHistorySchema = questionnaireSchema.pick({
-  medical_treatment_history: true
-});
-
-export const lifestyleFactorsSchema = questionnaireSchema.pick({
-  lifestyle_factors: true
+export const physicalExaminationSchema = questionnaireSchema.pick({
+  physical_examination: true
 });
 
 export const declarationsSchema = questionnaireSchema.pick({
-  declarations_and_signatures: true
+  declarations: true
 });
 
 // Validation helper functions
@@ -321,16 +499,14 @@ export const validateSection = (sectionName: string, data: unknown) => {
       return demographicsSchema.safeParse(data);
     case 'medical_history':
       return medicalHistorySchema.safeParse(data);
+    case 'working_at_heights':
+      return workingAtHeightsSchema.safeParse(data);
     case 'periodic_health':
       return periodicHealthSchema.safeParse(data);
-    case 'heights_assessment':
-      return heightsAssessmentSchema.safeParse(data);
     case 'return_to_work':
       return returnToWorkSchema.safeParse(data);
-    case 'treatment_history':
-      return treatmentHistorySchema.safeParse(data);
-    case 'lifestyle_factors':
-      return lifestyleFactorsSchema.safeParse(data);
+    case 'physical_examination':
+      return physicalExaminationSchema.safeParse(data);
     case 'declarations':
       return declarationsSchema.safeParse(data);
     default:
@@ -344,8 +520,12 @@ export const defaultQuestionnaireValues: Partial<Questionnaire> = {
     questionnaire_id: '',
     company_name: '',
     employee_id: '',
+    session_type: 'self_service',
+    start_method: 'tablet',
+    completion_path: 'guided',
     examination_type: 'pre_employment',
     examination_date: new Date().toISOString().split('T')[0],
+    start_time: new Date().toISOString(),
   },
   patient_demographics: {
     personal_info: {
@@ -361,81 +541,66 @@ export const defaultQuestionnaireValues: Partial<Questionnaire> = {
     employment_info: {
       position: '',
       department: '',
-      employee_number: '',
       company_name: '',
       employment_type: 'pre_employment',
     },
   },
   medical_history: {
     current_conditions: {
-      heart_disease_high_bp: false,
-      epilepsy_convulsions: false,
-      glaucoma_blindness: false,
-      diabetes_endocrine: false,
-      kidney_disease: false,
-      liver_disease: false,
-      mental_health_conditions: false,
-      neurological_conditions: false,
-      blood_disorders: false,
-      cancer_tumors: false,
-      autoimmune_conditions: false,
+      heart_disease_high_bp: null,
+      epilepsy_convulsions: null,
+      glaucoma_blindness: null,
+      family_mellitus_diabetes: null,
+      family_deaths_before_60: null,
+      bleeding_from_rectum: null,
+      kidney_stones_blood_urine: null,
+      sugar_protein_urine: null,
+      prostate_gynaecological_problems: null,
+      blood_thyroid_disorder: null,
+      malignant_tumours_cancer: null,
     },
     respiratory_conditions: {
-      tuberculosis_pneumonia: false,
-      chest_discomfort_palpitations: false,
-      asthma_allergies: false,
-      chronic_cough: false,
-      breathing_difficulties: false,
-      lung_disease: false,
+      tuberculosis_pneumonia: null,
+      chest_discomfort_palpitations: null,
+      shortness_of_breath: null,
+      chronic_cough: null,
+      asthma: null,
+    },
+    previous_medical_history: {
+      previous_operations: null,
+      hospital_admissions: null,
+      chronic_medications: null,
+      allergies: null,
     },
     occupational_health: {
-      noise_exposure: false,
-      heat_exposure: false,
-      chemical_exposure: false,
-      dust_exposure: false,
-      radiation_exposure: false,
-      vibration_exposure: false,
-      fitness_status: 'fit',
-      competitive_sport: false,
-      regular_exercise: false,
-      previous_occupational_injuries: false,
-    },
-    medication_history: {
-      current_medications: [],
-      allergies: [],
-    },
-    family_history: {
-      hereditary_conditions: [],
-      cardiovascular_disease: false,
-      diabetes: false,
-      cancer: false,
-      mental_health: false,
+      previous_occupational_illness: null,
+      workers_compensation_claims: null,
+      asbestos_exposure: null,
+      chemical_exposure: null,
+      noise_exposure: null,
+      dust_exposure: null,
+      radiation_exposure: null,
+      previous_medical_surveillance: null,
     },
   },
-  medical_treatment_history: {
-    last_two_years: [],
-    general_practitioners_ten_years: [],
-    hospitalizations: [],
-    surgical_history: [],
+  physical_examination: {
+    height: '',
+    weight: '',
+    pulse_rate: '',
+    bp_systolic: '',
+    bp_diastolic: '',
   },
-  declarations_and_signatures: {
+  declarations: {
     employee_declaration: {
       information_correct: false,
       no_misleading_information: false,
-      consent_to_medical_examination: false,
-      consent_to_information_sharing: false,
-      employee_name: '',
-      employee_signature: '',
-      employee_signature_date: '',
+      signature: '',
+      date: '',
     },
-  },
-  validation_status: {
-    questionnaire_complete: false,
-    vitals_validated: false,
-    assessment_complete: false,
-    ready_for_certificate: false,
-    validation_errors: [],
-    completion_percentage: 0,
-    missing_sections: [],
+    consent_declarations: {
+      medical_examination_consent: false,
+      information_sharing_consent: false,
+      occupational_health_program_consent: null,
+    },
   },
 };

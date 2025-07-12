@@ -17,6 +17,7 @@ import { HistoricalProcessing } from "./pages/HistoricalProcessing"
 import { MedicalTests } from "./pages/MedicalTests"
 import { CertificateManagement } from "./pages/CertificateManagement"
 import { Questionnaires } from "./pages/Questionnaires"
+import { EnhancedQuestionnaires } from "./pages/EnhancedQuestionnaires"
 import { MedicalReview } from "./pages/MedicalReview"
 import { PatientEHR } from "./pages/PatientEHR"
 import { SearchableEHR } from "./pages/SearchableEHR"
@@ -76,7 +77,8 @@ function App() {
             <Route path="vitals" element={<VitalSignsPage />} />
             <Route path="documents" element={<Documents />} />
             <Route path="processing" element={<HistoricalProcessing />} />
-            <Route path="questionnaires" element={<Questionnaires />} />
+            <Route path="questionnaires" element={<EnhancedQuestionnaires />} />
+            <Route path="questionnaires/legacy" element={<Questionnaires />} />
             <Route path="questionnaires/mobile" element={<MobileQuestionnaire />} />
             <Route path="patients/:patientId/questionnaire" element={<DigitalQuestionnaire />} />
             <Route path="questionnaire-complete" element={<QuestionnaireCompletePage />} />
