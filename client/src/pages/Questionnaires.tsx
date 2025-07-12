@@ -666,50 +666,9 @@ export function Questionnaires() {
                       </div>
                     </TabsContent>
 
-                    {/* Declaration */}
+                    {/* Declaration - Enhanced */}
                     <TabsContent value="declaration" className="space-y-4">
-                      <div className="space-y-4">
-                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                          <h4 className="font-medium mb-2">Declaration</h4>
-                          <p className="text-sm text-muted-foreground">
-                            I declare that the information provided in this questionnaire is true and complete to the best of my knowledge. I understand that any false information may result in the rejection of my application or termination of employment.
-                          </p>
-                        </div>
-
-                        <FormField
-                          control={form.control}
-                          name="declaration.signature"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Electronic Signature</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Type your full name as signature" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="declaration.signed"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="text-sm font-normal">
-                                  I agree to the declaration above and confirm my electronic signature
-                                </FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      <WorkingQuestionnaireDeclaration form={form} />
                     </TabsContent>
                   </Tabs>
 
