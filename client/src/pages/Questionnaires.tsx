@@ -35,6 +35,10 @@ import {
   Activity
 } from 'lucide-react';
 
+// Import enhanced components
+import { EnhancedMedicalHistorySection } from '@/components/EnhancedMedicalHistorySection';
+import { WorkingQuestionnaireDeclaration } from '@/components/WorkingQuestionnaireDeclaration';
+
 const questionnaireSchema = z.object({
   patientId: z.string().min(1, 'Patient selection is required'),
   personalHistory: z.object({
