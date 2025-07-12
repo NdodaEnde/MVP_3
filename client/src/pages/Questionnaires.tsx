@@ -119,7 +119,11 @@ export function Questionnaires() {
         regularExercise: false
       },
       declaration: {
-        signed: false,
+        information_correct: false,
+        no_misleading_information: false,
+        consent_to_medical_examination: false,
+        consent_to_information_sharing: false,
+        understanding_of_rights: false,
         signature: '',
         date: new Date().toISOString().split('T')[0]
       }
