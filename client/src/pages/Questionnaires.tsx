@@ -531,34 +531,9 @@ export function Questionnaires() {
                       </div>
                     </TabsContent>
 
-                    {/* Medical History */}
+                    {/* Medical History - Enhanced */}
                     <TabsContent value="medical" className="space-y-4">
-                      <ScrollArea className="h-96">
-                        <div className="space-y-4">
-                          {medicalHistoryQuestions.map((question) => (
-                            <FormField
-                              key={question.key}
-                              control={form.control}
-                              name={`medicalHistory.${question.key}` as any}
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value as boolean}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <div className="space-y-1 leading-none">
-                                    <FormLabel className="text-sm font-normal">
-                                      {question.label}
-                                    </FormLabel>
-                                  </div>
-                                </FormItem>
-                              )}
-                            />
-                          ))}
-                        </div>
-                      </ScrollArea>
+                      <EnhancedMedicalHistorySection form={form} />
                     </TabsContent>
 
                     {/* Occupational History */}
