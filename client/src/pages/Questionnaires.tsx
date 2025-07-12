@@ -67,7 +67,11 @@ const questionnaireSchema = z.object({
     regularExercise: z.boolean()
   }),
   declaration: z.object({
-    signed: z.boolean(),
+    information_correct: z.boolean(),
+    no_misleading_information: z.boolean(),
+    consent_to_medical_examination: z.boolean(),
+    consent_to_information_sharing: z.boolean(),
+    understanding_of_rights: z.boolean(),
     signature: z.string().min(1, 'Signature is required'),
     date: z.string().min(1, 'Date is required')
   })
