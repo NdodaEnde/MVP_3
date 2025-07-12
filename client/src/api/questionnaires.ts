@@ -607,5 +607,36 @@ export const updateQuestionnaireWithValidation = async (questionnaireId: string,
   }
 };
 
+// Add this function to your existing questionnaires.ts file:
+export const submitCompleteQuestionnaire = async (data: any) => {
+  try {
+    console.log("🔍 API DEBUG: Submitting complete questionnaire:", data);
+    
+    // DEVELOPMENT: Return mock success for now
+    if (process.env.NODE_ENV === 'development') {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            success: true,
+            message: 'Questionnaire submitted successfully',
+            questionnaireId: `quest_${Date.now()}`,
+            patientId: data.patient_id,
+            nextStation: 'vitals',
+            medicalAlerts: [],
+            requiresReview: false
+          });
+        }, 1000);
+      });
+    }
+
+    // Production API call
+    const response = await api.post('/api/questionnaires/submit', data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Questionnaire submission error:', error);
+    throw new Error(error?.response?.data?.message || error.message || 'Failed to submit questionnaire');
+  }
+};
+
 // Alias for backwards compatibility
 export const getPatientQuestionnaire = getQuestionnaireByPatient;

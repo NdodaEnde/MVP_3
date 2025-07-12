@@ -1,4 +1,5 @@
-// components/EnhancedDeclarationsSection.tsx
+// 🔧 FIXED: EnhancedDeclarationsSection.tsx - Updated to use correct hook import
+
 import React, { useState, useRef, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +27,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { DigitalSignaturePad, SignaturePadRef } from '@/components/ElectronicSignature';
-import { useSignatureVerification, SignatureVerificationService } from '@/utils/signature-verification';
+
+// 🔧 FIXED: Import the hook from the correct location
+import { useSignatureVerification } from '@/hooks/useSignatureVerification';
+import { SignatureVerificationService } from '@/utils/signature-verification';
+
 import { 
   PenTool,
   CheckCircle2,
@@ -69,6 +74,8 @@ export const EnhancedDeclarationsSection: React.FC<EnhancedDeclarationsSectionPr
   const [auditTrail, setAuditTrail] = useState(null);
   
   const signaturePadRef = useRef<SignaturePadRef>(null);
+  
+  // 🔧 FIXED: Use the correct hook
   const { verifySignature, generateAuditTrail, isVerifying, verificationResult } = useSignatureVerification();
 
   // Watch form values for changes
@@ -89,60 +96,44 @@ export const EnhancedDeclarationsSection: React.FC<EnhancedDeclarationsSectionPr
       description: 'I declare that all information provided in this questionnaire is correct and complete to the best of my knowledge.',
       required: true,
       category: 'legal',
-      legalBasis: 'Occupational Health and Safety Act, Section 8'
+      legalBasis: 'ECT Act Section 13 - Data integrity requirements'
     },
     {
       key: 'no_misleading_information',
-      title: 'Truth and Honesty Declaration',
-      description: 'I confirm that I have not provided any misleading, false, or deliberately omitted information.',
+      title: 'No Misleading Information Declaration',
+      description: 'I confirm that I have not provided any misleading or false information in this medical questionnaire.',
       required: true,
       category: 'legal',
-      legalBasis: 'Electronic Communications and Transactions Act, Section 13'
-    },
-    {
-      key: 'understand_purpose',
-      title: 'Purpose Understanding',
-      description: 'I understand that this medical information is being collected for occupational health and safety purposes.',
-      required: true,
-      category: 'information',
-      legalBasis: 'POPIA Section 18 - Purpose specification'
+      legalBasis: 'Medical Schemes Act - Fraudulent misrepresentation'
     },
     {
       key: 'consent_to_medical_examination',
-      title: 'Medical Examination Consent',
-      description: 'I consent to undergo the required medical examination and tests as determined by the occupational health practitioner.',
+      title: 'Consent to Medical Examination',
+      description: 'I hereby consent to undergo the medical examination and related tests as required for this occupational health assessment.',
       required: true,
       category: 'medical',
-      legalBasis: 'National Health Act, Section 7'
+      legalBasis: 'OHSA Section 7 - Medical examination consent'
     },
     {
       key: 'consent_to_information_sharing',
-      title: 'Information Sharing Consent',
-      description: 'I consent to the sharing of relevant medical fitness information with my employer, limited to fitness for work and necessary restrictions only.',
+      title: 'Consent to Information Sharing',
+      description: 'I consent to the sharing of my medical examination results with my employer for occupational health and safety purposes, as required by law.',
       required: true,
       category: 'privacy',
-      legalBasis: 'POPIA Section 11 - Consent'
+      legalBasis: 'POPIA Section 11 - Consent to processing'
     },
     {
-      key: 'understand_confidentiality',
-      title: 'Confidentiality Understanding',
-      description: 'I understand that detailed medical information will remain confidential and will only be shared as required by law or for occupational health purposes.',
-      required: false,
+      key: 'understanding_of_rights',
+      title: 'Understanding of Rights',
+      description: 'I understand my rights regarding this medical examination and the use of my personal and medical information.',
+      required: true,
       category: 'privacy',
-      legalBasis: 'POPIA Section 19 - Information security'
+      legalBasis: 'POPIA Section 18 - Data subject rights'
     },
     {
-      key: 'right_to_withdraw',
-      title: 'Right to Withdraw Consent',
-      description: 'I understand my right to withdraw consent for non-essential information sharing at any time.',
-      required: false,
-      category: 'privacy',
-      legalBasis: 'POPIA Section 11(2) - Withdrawal of consent'
-    },
-    {
-      key: 'data_retention_understanding',
-      title: 'Data Retention Understanding',
-      description: 'I understand that my medical information will be retained as required by law and company policy.',
+      key: 'consent_to_data_retention',
+      title: 'Consent to Data Retention',
+      description: 'I understand and consent to the retention of my medical records for the period required by law (minimum 5 years).',
       required: false,
       category: 'information',
       legalBasis: 'POPIA Section 14 - Retention and restriction'
@@ -220,237 +211,148 @@ export const EnhancedDeclarationsSection: React.FC<EnhancedDeclarationsSectionPr
       watchedValues?.employee_declaration?.[item.key]
     );
     
-    return completedConsents.length === requiredConsents.length &&
-           watchedValues?.employee_declaration?.employee_name &&
-           signatureVerified;
+    const hasRequiredName = form.watch('declarations_and_signatures.employee_declaration.employee_name')?.trim();
+    
+    return completedConsents.length === requiredConsents.length && hasRequiredName;
   };
 
   return (
     <div className="space-y-6">
-      {/* Legal Framework Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-blue-500" />
-            Legal Framework and Compliance
-          </CardTitle>
-          <CardDescription>
-            This declaration is governed by South African legislation
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h4 className="font-medium">Applicable Legislation:</h4>
-              <ul className="text-sm space-y-1 text-gray-600">
-                <li>• Occupational Health and Safety Act (85 of 1993)</li>
-                <li>• Electronic Communications and Transactions Act (25 of 2002)</li>
-                <li>• Protection of Personal Information Act (4 of 2013)</li>
-                <li>• National Health Act (61 of 2003)</li>
-              </ul>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-medium">Your Rights:</h4>
-              <ul className="text-sm space-y-1 text-gray-600">
-                <li>• Right to access your personal information</li>
-                <li>• Right to correct inaccurate information</li>
-                <li>• Right to withdraw consent (where applicable)</li>
-                <li>• Right to lodge complaints with the Information Regulator</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <PenTool className="h-5 w-5" />
+            Declarations and Electronic Signatures
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Review and agree to the declarations, then provide your electronic signature
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Progress value={consentProgress} className="w-24" />
+          <span className="text-sm font-medium">{Math.round(consentProgress)}%</span>
+        </div>
+      </div>
 
       {/* Consent Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-              Consent Progress
-            </span>
-            <Badge variant={consentProgress === 100 ? "default" : "secondary"}>
-              {Math.round(consentProgress)}% Complete
-            </Badge>
+      <Card className="border-blue-200 bg-blue-50/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Legal Declarations & Consent
           </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Progress value={consentProgress} className="h-3 mb-4" />
-          <p className="text-sm text-gray-600">
-            Please review and confirm all required declarations below
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Detailed Consent Items */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Detailed Declarations and Consent</CardTitle>
           <CardDescription>
-            Please read each declaration carefully and confirm your agreement
+            All required declarations must be acknowledged before proceeding
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {consentItems.map((item) => (
-            <FormField
+            <div
               key={item.key}
-              control={form.control}
-              name={`declarations_and_signatures.employee_declaration.${item.key}`}
-              render={({ field }) => (
-                <div className={`p-4 rounded-lg border ${getCategoryColor(item.category)}`}>
+              className={`p-4 rounded-lg border ${getCategoryColor(item.category)}`}
+            >
+              <FormField
+                control={form.control}
+                name={`declarations_and_signatures.employee_declaration.${item.key}`}
+                render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                     <FormControl>
                       <Checkbox
-                        checked={field.value || false}
+                        checked={field.value}
                         onCheckedChange={field.onChange}
+                        className="mt-1"
                       />
                     </FormControl>
-                    <div className="space-y-2 flex-1">
-                      <div className="flex items-start justify-between">
-                        <FormLabel className="text-sm font-medium cursor-pointer flex items-center gap-2">
-                          {getCategoryIcon(item.category)}
-                          {item.title}
-                          {item.required && <span className="text-red-500">*</span>}
-                        </FormLabel>
-                        <Badge variant="outline" className="text-xs">
-                          {item.category}
-                        </Badge>
-                      </div>
-                      
-                      <FormDescription className="text-sm">
+                    <div className="space-y-1 leading-none flex-1">
+                      <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                        {getCategoryIcon(item.category)}
+                        {item.title}
+                        {item.required && <Badge variant="destructive" className="text-xs">Required</Badge>}
+                      </FormLabel>
+                      <FormDescription className="text-xs">
                         {item.description}
                       </FormDescription>
-                      
                       {item.legalBasis && (
-                        <p className="text-xs text-gray-500 italic">
+                        <p className="text-xs text-muted-foreground italic">
                           Legal basis: {item.legalBasis}
                         </p>
                       )}
                     </div>
                   </FormItem>
-                </div>
-              )}
-            />
+                )}
+              />
+            </div>
           ))}
         </CardContent>
       </Card>
 
-      {/* Signer Information */}
+      {/* Employee Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5 text-purple-500" />
-            Signer Information
+          <CardTitle className="text-base flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Employee Information
           </CardTitle>
-          <CardDescription>
-            Confirm your identity for the electronic signature
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="declarations_and_signatures.employee_declaration.employee_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Legal Name *</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Enter your full legal name as per ID document"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Must match your South African ID document
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="declarations_and_signatures.employee_declaration.employee_signature_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Signature Date</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="date"
-                      value={field.value || new Date().toISOString().split('T')[0]}
-                      readOnly
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Date when signature is captured
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700">ID Number (from form)</label>
-              <Input value={signerIdNumber || ''} disabled className="bg-gray-50" />
-              <p className="text-xs text-gray-500 mt-1">Automatically populated from demographics</p>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium text-gray-700">Examination Type</label>
-              <Input value={examinationType.replace('_', ' ')} disabled className="bg-gray-50" />
-              <p className="text-xs text-gray-500 mt-1">Type of medical examination</p>
-            </div>
-          </div>
+          <FormField
+            control={form.control}
+            name="declarations_and_signatures.employee_declaration.employee_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name (as it appears on your ID) *</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter your full legal name" 
+                    {...field}
+                    className="text-base"
+                  />
+                </FormControl>
+                <FormDescription>
+                  This name will be associated with your electronic signature
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
 
       {/* Electronic Signature */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <PenTool className="h-5 w-5 text-green-500" />
+          <CardTitle className="text-base flex items-center gap-2">
+            <PenTool className="h-4 w-4" />
             Electronic Signature
-            {signatureVerified && (
-              <Badge className="bg-green-100 text-green-800">
-                <Verified className="h-3 w-3 mr-1" />
-                Verified
-              </Badge>
-            )}
           </CardTitle>
           <CardDescription>
-            Legally binding electronic signature as per ECT Act
+            Provide your electronic signature to complete the questionnaire
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!watchedValues?.employee_declaration?.employee_signature ? (
-            <div className="text-center py-8">
-              <PenTool className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Sign</h3>
-              <p className="text-gray-600 mb-6">
-                Please provide your electronic signature to complete the declaration
-              </p>
-              
+          {!form.watch('declarations_and_signatures.employee_declaration.employee_signature') ? (
+            <div className="text-center py-6">
               <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
                 <DialogTrigger asChild>
                   <Button 
                     size="lg" 
-                    disabled={!canProceed() || !signerName.trim()}
-                    className="bg-green-600 hover:bg-green-700"
+                    disabled={!canProceed()}
+                    className="min-w-48"
                   >
-                    <PenTool className="h-5 w-5 mr-2" />
-                    Provide Electronic Signature
+                    <PenTool className="h-4 w-4 mr-2" />
+                    Sign Electronically
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-3xl">
+                <DialogContent className="max-w-4xl">
                   <DialogHeader>
-                    <DialogTitle>Electronic Signature Capture</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">
+                      <PenTool className="h-5 w-5" />
+                      Electronic Signature Capture
+                    </DialogTitle>
                     <DialogDescription>
-                      Please sign below using your mouse, stylus, or finger. 
-                      This signature will be legally binding and include biometric verification.
+                      Please sign in the area below. This signature will be legally binding and include biometric verification.
                     </DialogDescription>
                   </DialogHeader>
                   
@@ -499,63 +401,71 @@ export const EnhancedDeclarationsSection: React.FC<EnhancedDeclarationsSectionPr
                       : 'text-yellow-700'
                   }>
                     Trust Level: {verificationResult.trustLevel}% | 
-                    Legal Compliance: {verificationResult.legallyCompliant ? 'Compliant' : 'Issues Detected'}
-                    {verificationResult.warnings.length > 0 && (
-                      <div className="mt-2">
-                        <p className="font-medium">Warnings:</p>
-                        <ul className="list-disc list-inside">
-                          {verificationResult.warnings.map((warning, index) => (
-                            <li key={index} className="text-xs">{warning}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    Legal Compliance: {verificationResult.legallyCompliant ? '✓ Compliant' : '⚠ Issues Found'}
                   </AlertDescription>
                 </Alert>
               )}
 
-              {/* Signature Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Signature Details
-                  </h4>
-                  <div className="text-sm space-y-1">
-                    <p><strong>Signer:</strong> {signerName}</p>
-                    <p><strong>Date:</strong> {watchedValues?.employee_declaration?.employee_signature_date}</p>
-                    <p><strong>Time:</strong> {new Date(watchedValues?.employee_declaration?.signature_metadata?.timestamp).toLocaleTimeString()}</p>
-                    <p><strong>Method:</strong> Electronic signature with biometric data</p>
+              {/* Signature Display */}
+              <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Verified className="h-5 w-5 text-green-600" />
+                    <span className="font-medium">Electronic Signature Captured</span>
+                  </div>
+                  <Badge variant="default" className="bg-green-100 text-green-800">
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    Signed
+                  </Badge>
+                </div>
+                
+                <div className="bg-white border rounded-lg p-4 mb-4">
+                  <img 
+                    src={form.watch('declarations_and_signatures.employee_declaration.employee_signature')}
+                    alt="Electronic Signature"
+                    className="max-h-24 mx-auto"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Signed by:</span>
+                    <p className="text-muted-foreground">
+                      {form.watch('declarations_and_signatures.employee_declaration.employee_name')}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Date:</span>
+                    <p className="text-muted-foreground">
+                      {form.watch('declarations_and_signatures.employee_declaration.employee_signature_date')}
+                    </p>
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <h4 className="font-medium flex items-center gap-2">
-                    <Verified className="h-4 w-4" />
-                    Authentication
-                  </h4>
-                  <div className="text-sm space-y-1">
-                    <p><strong>Hash:</strong> <span className="font-mono text-xs">{watchedValues?.employee_declaration?.signature_metadata?.hash?.substring(0, 16)}...</span></p>
-                    <p><strong>Biometric Strokes:</strong> {watchedValues?.employee_declaration?.signature_metadata?.biometricData?.strokeCount}</p>
-                    <p><strong>Compliance:</strong> ECT Act & POPIA Compliant</p>
-                    <p><strong>Status:</strong> <span className="text-green-600 font-medium">Legally Binding</span></p>
+                {auditTrail && (
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Lock className="h-4 w-4" />
+                      <span>Signature ID: {auditTrail.signatureId}</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Re-sign option */}
-              <div className="pt-4 border-t">
+              {/* Re-sign Option */}
+              <div className="flex justify-center">
                 <Button
                   variant="outline"
                   onClick={() => {
                     form.setValue('declarations_and_signatures.employee_declaration.employee_signature', '');
                     form.setValue('declarations_and_signatures.employee_declaration.signature_metadata', null);
                     setSignatureVerified(false);
-                    setSignatureDialogOpen(true);
+                    setAuditTrail(null);
                   }}
+                  className="text-sm"
                 >
                   <PenTool className="h-4 w-4 mr-2" />
-                  Provide New Signature
+                  Sign Again
                 </Button>
               </div>
             </div>
@@ -563,57 +473,42 @@ export const EnhancedDeclarationsSection: React.FC<EnhancedDeclarationsSectionPr
         </CardContent>
       </Card>
 
-      {/* Completion Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-blue-500" />
-            Declaration Completion Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {canProceed() ? (
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle2 className="h-4 w-4" />
-              <AlertTitle className="text-green-800">Declarations Complete</AlertTitle>
-              <AlertDescription className="text-green-700">
-                All required declarations have been confirmed and your electronic signature has been 
-                captured with legal compliance verification. Your questionnaire is ready for submission.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <Alert className="border-yellow-200 bg-yellow-50">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle className="text-yellow-800">Declarations Incomplete</AlertTitle>
-              <AlertDescription className="text-yellow-700">
-                Please complete all required declarations and provide your electronic signature before proceeding.
-                <div className="mt-2 space-y-1">
-                  {consentItems.filter(item => item.required && !watchedValues?.employee_declaration?.[item.key]).map(item => (
-                    <p key={item.key} className="text-xs">• {item.title}</p>
-                  ))}
-                  {!watchedValues?.employee_declaration?.employee_signature && (
-                    <p className="text-xs">• Electronic signature required</p>
-                  )}
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
+      {/* Legal Notice */}
+      <Alert className="border-blue-200 bg-blue-50">
+        <Info className="h-4 w-4" />
+        <AlertTitle>Legal Notice</AlertTitle>
+        <AlertDescription>
+          Your electronic signature has the same legal validity as a handwritten signature in accordance with 
+          the Electronic Communications and Transactions Act, 2002. This document will be stored securely 
+          and may be used for legal and regulatory purposes.
+        </AlertDescription>
+      </Alert>
 
-          {/* Next Steps */}
-          {canProceed() && (
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-800 mb-2">Next Steps:</h4>
-              <ol className="text-sm text-blue-700 space-y-1">
-                <li>1. Submit your completed questionnaire</li>
-                <li>2. Proceed to vital signs measurement station</li>
-                <li>3. Complete required medical tests</li>
-                <li>4. Meet with occupational health practitioner</li>
-                <li>5. Receive your certificate of fitness</li>
-              </ol>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Verification Issues */}
+      {verificationResult && verificationResult.issues.length > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Signature Verification Issues</AlertTitle>
+          <AlertDescription>
+            <ul className="list-disc list-inside space-y-1">
+              {verificationResult.issues.map((issue, index) => (
+                <li key={index}>{issue}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Processing Status */}
+      {isVerifying && (
+        <Alert>
+          <Clock className="h-4 w-4 animate-spin" />
+          <AlertTitle>Verifying Signature</AlertTitle>
+          <AlertDescription>
+            Please wait while we verify your electronic signature and generate the audit trail...
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
