@@ -108,6 +108,21 @@ frontend:
         agent: "testing"
         comment: "COMPREHENSIVE END-TO-END TESTING COMPLETED: Medical Questionnaire system fully operational with 21 form elements found. Patient loading works correctly (John Doe loaded successfully). Minor SA ID validation errors in console due to 'require' usage in browser environment, but core functionality intact. Multi-tab questionnaire system functional."
 
+  - task: "Enhanced Medical Questionnaires"
+    implemented: true
+    working: true
+    file: "/app/client/src/pages/Questionnaires.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial testing required for enhanced medical history and declarations components integration"
+      - working: true
+        agent: "testing"
+        comment: "ROUTING ISSUE RESOLVED: Fixed App.tsx routing configuration to use enhanced Questionnaires component instead of MobileQuestionnaire. Enhanced questionnaires page now loads correctly at /questionnaires route showing 'Medical Questionnaires' header, 'Select Patient' section, and proper tab navigation (Personal, Medical, Occupational, Fitness, Signatures). The enhanced medical history and declarations components are successfully integrated and accessible through the Medical and Signatures tabs respectively. EnhancedMedicalHistorySection and WorkingQuestionnaireDeclaration components are properly imported and functional."
+
   - task: "Vital Signs Recording"
     implemented: true
     working: true
