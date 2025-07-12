@@ -76,7 +76,7 @@ function App() {
             <Route path="vitals" element={<VitalSignsPage />} />
             <Route path="documents" element={<Documents />} />
             <Route path="processing" element={<HistoricalProcessing />} />
-            <Route path="questionnaires" element={<MobileQuestionnaire />} />
+            <Route path="questionnaires" element={<Questionnaires />} />
             <Route path="questionnaires/mobile" element={<MobileQuestionnaire />} />
             <Route path="patients/:patientId/questionnaire" element={<DigitalQuestionnaire />} />
             <Route path="questionnaire-complete" element={<QuestionnaireCompletePage />} />
