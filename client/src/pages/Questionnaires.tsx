@@ -390,7 +390,7 @@ export function Questionnaires() {
                       </TabsTrigger>
                       <TabsTrigger value="declaration" className="flex items-center gap-2">
                         <PenTool className="h-4 w-4" />
-                        Declaration
+                        Signatures
                       </TabsTrigger>
                     </TabsList>
 
